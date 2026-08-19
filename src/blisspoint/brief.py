@@ -15,6 +15,31 @@ from .dials import Dials
 # A brief that leans on evidence this long has stopped being a handoff.
 BULKY_EVIDENCE_CHARS = 2000
 
+# Below this, the brief tells the agent to start a fresh conversation. Defined once so
+# Brief.fresh_conversation and the rendered banner can never disagree.
+FRESH_CONVERSATION_BELOW = 0.4
+
+
+def wants_fresh_conversation(profile, dials) -> bool:
+    return profile.fresh_conversation_default and dials.context_volume < FRESH_CONVERSATION_BELOW
+
+
+@dataclass(frozen=True)
+class Gap:
+    """A missing input the resolved dials demand.
+
+    `code` is the stable identifier: branch on it. `message` is for humans, and its
+    wording is not part of the API. `details` carries the facts a machine would other-
+    wise have to parse back out of the sentence.
+    """
+
+    code: str
+    message: str
+    details: dict = field(default_factory=dict)
+
+    def __str__(self) -> str:
+        return self.message
+
 
 @dataclass
 class Subtask:
@@ -107,11 +132,12 @@ def render(task: Task, dials: Dials, profile) -> tuple:
     parts: list = []
 
     if not task.objective.strip():
-        gaps.append("objective is empty — every brief needs one concrete outcome")
+        gaps.append(Gap("objective_empty",
+                        "objective is empty — every brief needs one concrete outcome"))
 
     parts.append(f"# {profile.name.upper()} — {profile.role or 'task'}\n")
 
-    if d.context_volume < 0.4 and profile.fresh_conversation_default:
+    if wants_fresh_conversation(profile, d):
         parts.append(
             "> Start a new conversation. Everything needed is below; prior history is not.\n"
         )
@@ -138,24 +164,32 @@ def render(task: Task, dials: Dials, profile) -> tuple:
     if d.context_volume >= 0.6:
         parts.append(_section("Evidence", task.evidence))
         if not task.evidence.strip():
-            gaps.append(
+            gaps.append(Gap(
+                "evidence_missing",
                 "context_volume is high but no evidence supplied — either gather it "
-                "or turn the dial down")
+                "or turn the dial down",
+                {"context_volume": d.context_volume}))
     elif task.evidence.strip():
         parts.append(_section("Evidence", task.evidence))
         if len(task.evidence) > BULKY_EVIDENCE_CHARS:
-            gaps.append(
+            gaps.append(Gap(
+                "evidence_bulky",
                 f"evidence is {len(task.evidence)} chars but context_volume is "
-                f"{d.context_volume:.2f} — compress it before sending")
+                f"{d.context_volume:.2f} — compress it before sending",
+                {"actual_chars": len(task.evidence),
+                 "limit_chars": BULKY_EVIDENCE_CHARS,
+                 "context_volume": d.context_volume}))
 
     # --- the task itself -------------------------------------------------
     if d.autonomy >= 0.6:
         if task.open_decisions:
             parts.append(_section("Decisions you own", _bullets(task.open_decisions)))
         else:
-            gaps.append(
+            gaps.append(Gap(
+                "open_decisions_missing",
                 "autonomy is high but no open decisions were named — say what this "
-                "agent is authorised to decide, or lower the dial")
+                "agent is authorised to decide, or lower the dial",
+                {"autonomy": d.autonomy}))
 
     if d.decomposition >= 0.6:
         if task.subtasks:
@@ -166,50 +200,64 @@ def render(task: Task, dials: Dials, profile) -> tuple:
             if d.acceptance_binding >= 0.6:
                 missing = [st.id for st in task.subtasks if not st.acceptance]
                 if missing:
-                    gaps.append(
+                    gaps.append(Gap(
+                        "subtask_acceptance_missing",
                         "acceptance_binding is high but these subtasks carry no "
-                        f"criteria: {', '.join(missing)}")
+                        f"criteria: {', '.join(missing)}",
+                        {"subtask_ids": missing}))
             untestable = [st.id for st in task.subtasks
                           if d.verification_rigor >= 0.6 and not st.verification]
             if untestable:
-                gaps.append(
+                gaps.append(Gap(
+                    "subtask_verification_missing",
                     "verification_rigor is high but no verification method for: "
-                    f"{', '.join(untestable)}")
+                    f"{', '.join(untestable)}",
+                    {"subtask_ids": untestable}))
         else:
-            gaps.append(
+            gaps.append(Gap(
+                "subtasks_missing",
                 "decomposition is high but no subtasks supplied — this agent needs an "
-                "engineering task list, not one outcome")
+                "engineering task list, not one outcome",
+                {"decomposition": d.decomposition}))
     else:
         verb = "Design an approach for" if d.specificity < 0.4 else "Do the following"
         body = task.instructions.strip() or f"{verb}: {task.objective.strip()}"
         parts.append(_section("Task", body))
         if d.specificity >= 0.6 and not task.instructions.strip():
-            gaps.append(
+            gaps.append(Gap(
+                "instructions_missing",
                 "specificity is high but no instructions supplied — this agent expects "
-                "to be told what to do")
+                "to be told what to do",
+                {"specificity": d.specificity}))
 
     if d.acceptance_binding < 0.6 or not task.subtasks:
         if task.acceptance:
             parts.append(_section("Acceptance criteria", _bullets(task.acceptance)))
         elif d.acceptance_binding >= 0.3:
-            gaps.append("no acceptance criteria — there is no observable definition of done")
+            gaps.append(Gap(
+                "acceptance_missing",
+                "no acceptance criteria — there is no observable definition of done"))
 
     if d.verification_rigor >= 0.6:
         if task.verification:
             parts.append(_section("Verification", task.verification))
         elif not task.subtasks:
-            gaps.append(
+            gaps.append(Gap(
+                "verification_missing",
                 "verification_rigor is high but no verification method — name the "
-                "command, test or visual check")
+                "command, test or visual check",
+                {"verification_rigor": d.verification_rigor}))
 
     if d.escalation_explicitness >= 0.6:
         if task.escalation_triggers:
             parts.append(_section("Escalate instead of proceeding when",
                                   _bullets(task.escalation_triggers)))
         else:
-            gaps.append(
+            gaps.append(Gap(
+                "escalation_triggers_missing",
                 "escalation_explicitness is high but no triggers named — say when to "
-                "stop and hand back")
+                "stop and hand back",
+                {"escalation_explicitness": d.escalation_explicitness}))
 
     contract = list(task.return_format) or list(profile.return_contract)
     if contract:

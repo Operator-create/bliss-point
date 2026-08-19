@@ -20,8 +20,9 @@ Claude Code, a shell script — does the sending.
 import blisspoint as bp
 
 brief = bp.compile(task, target="codex", phase="implement", stakes="high")
-print(brief.text)   # the brief
-print(brief.gaps)   # what you failed to supply that this agent will need
+print(brief.text)              # the brief
+for gap in brief.gaps:         # what you failed to supply that this agent will need
+    print(gap.code, gap.details)
 ```
 
 ## The seven dials
@@ -76,6 +77,10 @@ $ bliss compile balthasar --objective "Check if the plugin APIs are stable" --ph
 That is a lazy one-line delegation getting caught at compile time instead of coming back four
 minutes later as a confident, unfalsifiable answer.
 
+Each gap carries a stable `code` (`subtasks_missing`, `evidence_bulky`, …) and structured
+`details` such as `{"subtask_ids": ["ST3"]}`. Branch on the code; the message wording is for
+humans and is not part of the API.
+
 ## Install
 
 ```bash
@@ -109,6 +114,10 @@ notes:
 Ships with `claude`, `codex`, `antigravity`, `grok`, and the Hermes triad (`casper`, `balthasar`,
 `melchior`). Point `BLISSPOINT_PROFILES` at your own directory to replace them entirely — the
 profiles are data, not code.
+
+That directory is a complete configuration: your profiles plus `_phases.yaml` and `_stakes.yaml`.
+It is validated on load and fails once, naming the file and the key. A misspelled `dial:` or an
+unknown dial name is an error, never a profile that quietly runs at the 0.5 defaults.
 
 ## Cross-family validation
 

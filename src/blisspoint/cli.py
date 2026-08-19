@@ -90,7 +90,7 @@ def main(argv=None) -> int:
     print(brief.text)
     if brief.gaps:
         print("\n".join(["", "<!-- gaps ------------------------------------------"]
-                        + [f"  - {g}" for g in brief.gaps] + ["-->"]), file=sys.stderr)
+                        + [f"  - [{g.code}] {g}" for g in brief.gaps] + ["-->"]), file=sys.stderr)
         if args.strict:
             return 1
     return 0

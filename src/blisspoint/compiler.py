@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .brief import Brief, Task, render
+from .brief import Brief, Task, render, wants_fresh_conversation
 from .profiles import resolve
 
 
@@ -25,7 +25,7 @@ def compile(task, target: str, phase: str = "implement", stakes: str = "normal",
     text, gaps = render(task, dials, profile)
     return Brief(
         text=text, dials=dials, target=profile.name, phase=phase, stakes=stakes,
-        gaps=gaps, fresh_conversation=profile.fresh_conversation_default and dials.context_volume < 0.4,
+        gaps=gaps, fresh_conversation=wants_fresh_conversation(profile, dials),
     )
 
 

@@ -1,11 +1,22 @@
+import os
+import shutil
 import sys
+import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from blisspoint import Dials, Subtask, Task, compile, cross_family, list_profiles, resolve
+from blisspoint import (
+    Dials, ProfileError, Subtask, Task, compile, cross_family, list_profiles, resolve,
+)
 from blisspoint.profiles import load_profile
+
+
+def codes(brief):
+    """Consumers branch on gap codes, never on the English message."""
+    return {g.code for g in brief.gaps}
 
 
 class TestDials(unittest.TestCase):
@@ -65,7 +76,7 @@ class TestShape(unittest.TestCase):
 
     def test_antigravity_demands_subtasks(self):
         b = compile(self.task, "antigravity", phase="implement")
-        self.assertTrue(any("decomposition is high" in g for g in b.gaps))
+        self.assertIn("subtasks_missing", codes(b))
 
     def test_subtasks_carry_their_own_criteria(self):
         t = Task(
@@ -87,7 +98,7 @@ class TestShape(unittest.TestCase):
 
     def test_high_autonomy_without_open_decisions_is_a_gap(self):
         b = compile("Choose the persistence layer.", "claude", phase="design")
-        self.assertTrue(any("autonomy is high" in g for g in b.gaps))
+        self.assertIn("open_decisions_missing", codes(b))
 
     def test_grok_stays_narrow(self):
         b = compile("Which retry strategy is safer here?", "grok", phase="review")
@@ -97,7 +108,9 @@ class TestShape(unittest.TestCase):
     def test_bulky_evidence_flagged_for_narrow_agents(self):
         t = Task(objective="Audit this.", evidence="x" * 3000)
         b = compile(t, "grok", phase="review")
-        self.assertTrue(any("compress it" in g for g in b.gaps))
+        self.assertIn("evidence_bulky", codes(b))
+        gap = next(g for g in b.gaps if g.code == "evidence_bulky")
+        self.assertEqual(gap.details["actual_chars"], 3000)
 
     def test_string_task_shorthand(self):
         self.assertIn("Objective", compile("ship it", "codex").text)
@@ -105,6 +118,122 @@ class TestShape(unittest.TestCase):
     def test_unknown_task_field_raises(self):
         with self.assertRaises(KeyError):
             compile({"objective": "x", "wat": 1}, "codex")
+
+
+class TestGapContract(unittest.TestCase):
+    """Codes are the API; the message wording is not."""
+
+    def test_codes_are_stable_identifiers(self):
+        b = compile(Task(objective="Rebuild the screen.",
+                         subtasks=[Subtask(id="ST1", title="Layout")]),
+                    "antigravity", phase="implement")
+        self.assertLessEqual(
+            {"subtask_acceptance_missing", "subtask_verification_missing"}, codes(b))
+        gap = next(g for g in b.gaps if g.code == "subtask_acceptance_missing")
+        self.assertEqual(gap.details["subtask_ids"], ["ST1"])
+
+    def test_message_still_readable(self):
+        b = compile("", "codex")
+        self.assertIn("objective is empty", str(b.gaps[0]))
+
+    def test_fresh_conversation_matches_the_rendered_banner(self):
+        for target in list_profiles():
+            for phase in ("research", "implement", "review"):
+                b = compile("x", target, phase=phase)
+                self.assertEqual(b.fresh_conversation,
+                                 "Start a new conversation" in b.text,
+                                 f"{target}/{phase}")
+
+
+class TestProfileDirectoryContract(unittest.TestCase):
+    """A custom profiles directory is a complete configuration, validated on load."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self._prev = os.environ.get("BLISSPOINT_PROFILES")
+        os.environ["BLISSPOINT_PROFILES"] = self.tmp
+        self.addCleanup(self._restore)
+
+    def _restore(self):
+        if self._prev is None:
+            os.environ.pop("BLISSPOINT_PROFILES", None)
+        else:
+            os.environ["BLISSPOINT_PROFILES"] = self._prev
+
+    def write(self, name, text):
+        Path(self.tmp, name).write_text(textwrap.dedent(text))
+
+    def minimal(self):
+        self.write("_phases.yaml", "implement: {}\n")
+        self.write("_stakes.yaml", "normal: {}\n")
+        self.write("mine.yaml", """\
+            family: acme
+            role: doer
+            dials:
+              autonomy: 0.2
+            """)
+
+    def test_a_valid_custom_directory_works(self):
+        self.minimal()
+        self.assertEqual(list_profiles(), ["mine"])
+        self.assertEqual(resolve("mine")[1].autonomy, 0.2)
+
+    def test_missing_modifier_tables_fail_loudly(self):
+        self.write("mine.yaml", "family: acme\nrole: doer\n")
+        with self.assertRaises(ProfileError) as ctx:
+            resolve("mine")
+        self.assertIn("_phases.yaml", str(ctx.exception))
+
+    def test_typo_in_dials_key_does_not_resolve_to_defaults(self):
+        self.minimal()
+        self.write("mine.yaml", """\
+            family: acme
+            role: doer
+            dial:
+              autonomy: 0.2
+            """)
+        with self.assertRaises(ProfileError):
+            resolve("mine")
+
+    def test_unknown_dial_name_is_rejected(self):
+        self.minimal()
+        self.write("mine.yaml", """\
+            family: acme
+            role: doer
+            dials:
+              vibes: 0.9
+            """)
+        with self.assertRaises(ProfileError):
+            resolve("mine")
+
+    def test_family_is_required_because_validators_depend_on_it(self):
+        self.minimal()
+        self.write("mine.yaml", "role: doer\n")
+        with self.assertRaises(ProfileError):
+            resolve("mine")
+
+    def test_name_must_match_filename(self):
+        self.minimal()
+        self.write("mine.yaml", "name: other\nfamily: acme\nrole: doer\n")
+        with self.assertRaises(ProfileError):
+            resolve("mine")
+
+    def test_yaml_string_false_is_not_true(self):
+        self.minimal()
+        self.write("mine.yaml", """\
+            family: acme
+            role: doer
+            fresh_conversation_default: "false"
+            """)
+        with self.assertRaises(ProfileError):
+            resolve("mine")
+
+    def test_modifier_tables_are_validated_too(self):
+        self.minimal()
+        self.write("_phases.yaml", "implement:\n  vibes: 0.1\n")
+        with self.assertRaises(ProfileError):
+            resolve("mine")
 
 
 class TestCrossFamily(unittest.TestCase):
