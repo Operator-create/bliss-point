@@ -11,7 +11,7 @@ import yaml
 
 from . import __version__
 from .compiler import compile as compile_task, cross_family
-from .dials import DIAL_NAMES, DIAL_POLES
+from .dials import DIAL_NAMES, DIAL_POLES, correlation
 from .profiles import list_profiles, load_profile, phases, resolve
 
 
@@ -42,7 +42,10 @@ def main(argv=None) -> int:
     c.add_argument("--phase", default="implement")
     c.add_argument("--stakes", default="normal", choices=["low", "normal", "high"])
     c.add_argument("--set", dest="overrides", action="append", metavar="dial=value")
-    c.add_argument("--strict", action="store_true", help="exit 1 if the brief has gaps")
+    c.add_argument("--strict", action="store_true", help="exit 1 if the brief has any gap")
+    c.add_argument("--gate", action="store_true",
+                   help="exit 1 only on blocking gaps (no objective, or no acceptance "
+                        "criteria when the recipient's contract is tight)")
 
     d = sub.add_parser("dials", help="show the resolved point without rendering")
     d.add_argument("target")
@@ -50,6 +53,7 @@ def main(argv=None) -> int:
     d.add_argument("--stakes", default="normal", choices=["low", "normal", "high"])
 
     sub.add_parser("profiles", help="list known agents")
+    sub.add_parser("correlate", help="are the dials independent? (D6)")
     sub.add_parser("phases", help="list known phases")
 
     v = sub.add_parser("validators", help="who may review this agent's work")
@@ -61,6 +65,18 @@ def main(argv=None) -> int:
         for name in list_profiles():
             p = load_profile(name)
             print(f"{p.name:<12} {p.family:<10} {p.role}")
+        return 0
+
+    if args.cmd == "correlate":
+        names = list_profiles()
+        pts = [load_profile(n).dials for n in names]
+        pairs = sorted(correlation(pts).items(), key=lambda kv: -abs(kv[1]))
+        print(f"pairwise dial correlation across {len(names)} profiles: {', '.join(names)}\n")
+        for (a, b), r in pairs:
+            flag = "  <-- moves together" if abs(r) >= 0.9 else ""
+            print(f"  {r:+.3f}  {a} / {b}{flag}")
+        print("\nA pair at |r| >= 0.9 across profiles written by DIFFERENT people is one dial.")
+        print("Across profiles written by one author it is one author's habit. See docs/roadmap.md D6.")
         return 0
 
     if args.cmd == "phases":
@@ -91,7 +107,7 @@ def main(argv=None) -> int:
     if brief.gaps:
         print("\n".join(["", "<!-- gaps ------------------------------------------"]
                         + [f"  - [{g.code}] {g}" for g in brief.gaps] + ["-->"]), file=sys.stderr)
-        if args.strict:
+        if args.strict or (args.gate and brief.blocking_gaps):
             return 1
     return 0
 

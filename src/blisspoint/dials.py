@@ -68,3 +68,33 @@ class Dials:
             bar = "#" * int(round(v * 10)) + "." * (10 - int(round(v * 10)))
             rows.append(f"  {n:<24} {bar} {v:.2f}")
         return "\n".join(rows)
+
+
+def correlation(points: list) -> dict:
+    """Pearson correlation between every pair of dials across a set of Dials.
+
+    D6 asks whether seven dials are seven independent axes. Two dials that move
+    together across every profile are one dial wearing two names. This is the
+    measurement that settles it -- note that it measures the *profiles supplied*,
+    so run it over profiles written by other people before believing it.
+    """
+    n = len(points)
+    if n < 3:
+        raise ValueError("need at least 3 profiles to say anything about correlation")
+
+    cols = {name: [getattr(p, name) for p in points] for name in DIAL_NAMES}
+    means = {k: sum(v) / n for k, v in cols.items()}
+
+    def corr(a: str, b: str) -> float:
+        da = [x - means[a] for x in cols[a]]
+        db = [x - means[b] for x in cols[b]]
+        num = sum(x * y for x, y in zip(da, db))
+        den = (sum(x * x for x in da) ** 0.5) * (sum(y * y for y in db) ** 0.5)
+        return 0.0 if den == 0 else round(num / den, 3)
+
+    out = {}
+    names = list(DIAL_NAMES)
+    for i, a in enumerate(names):
+        for b in names[i + 1:]:
+            out[(a, b)] = corr(a, b)
+    return out

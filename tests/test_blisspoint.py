@@ -9,7 +9,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from blisspoint import (
-    Dials, ProfileError, Subtask, Task, compile, cross_family, list_profiles, resolve,
+    Dials, ProfileError, Subtask, Task, compile, correlation, cross_family,
+    list_profiles, resolve,
 )
 from blisspoint.profiles import load_profile
 
@@ -234,6 +235,40 @@ class TestProfileDirectoryContract(unittest.TestCase):
         self.write("_phases.yaml", "implement:\n  vibes: 0.1\n")
         with self.assertRaises(ProfileError):
             resolve("mine")
+
+
+class TestBlockingGaps(unittest.TestCase):
+    """Only two conditions stop a dispatch; the rest advise."""
+
+    def test_no_objective_blocks(self):
+        b = compile("", "codex")
+        self.assertIn("objective_empty", [g.code for g in b.blocking_gaps])
+
+    def test_missing_acceptance_blocks_only_when_contract_is_tight(self):
+        tight = compile("ship it", "codex", phase="implement")
+        self.assertIn("acceptance_missing", [g.code for g in tight.blocking_gaps])
+
+        loose = compile("which retry strategy is safer?", "grok", phase="review")
+        self.assertNotIn("acceptance_missing", [g.code for g in loose.blocking_gaps])
+
+    def test_advisory_gaps_do_not_block(self):
+        b = compile(Task(objective="Audit this.", evidence="x" * 3000), "grok", phase="review")
+        self.assertIn("evidence_bulky", codes(b))
+        self.assertNotIn("evidence_bulky", [g.code for g in b.blocking_gaps])
+
+
+class TestDialIndependence(unittest.TestCase):
+    """D6: are seven dials seven axes, or fewer wearing more names?"""
+
+    def test_correlation_covers_every_pair(self):
+        pts = [load_profile(n).dials for n in list_profiles()]
+        c = correlation(pts)
+        self.assertEqual(len(c), 21)  # 7 choose 2
+        self.assertTrue(all(-1.0 <= v <= 1.0 for v in c.values()))
+
+    def test_refuses_to_report_on_too_few_profiles(self):
+        with self.assertRaises(ValueError):
+            correlation([Dials(), Dials()])
 
 
 class TestCrossFamily(unittest.TestCase):

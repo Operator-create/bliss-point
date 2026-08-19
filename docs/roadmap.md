@@ -39,7 +39,10 @@ What settled it:
 - **T1.1 — dsh plugin.** DIM. Hook `system-prompt/assemble`; declare `inject: ['systemPrompt']`.
 - **T1.2 — TypeScript renderer over the same YAML/Markdown.** DIM. Still gated on D3, since
   template overrides would have to port too.
-- **T1.3 — pi integration example.** DIM.
+- **T1.3 — pi package.** DIM, and promoted: the audit found `dodo-reach/pi-clarify` (verified,
+  169★) already doing "rewrite rough prompts before send" *as a pi package*, alongside 788 repos
+  under the `pi-package` topic. The extension surface is where this ecosystem actually adopts
+  things; a library people must remember to call is not.
 - **T1.4 — Publish to PyPI.** DIM. Unblocked by nothing; wants a name check first.
 
 ---
@@ -82,12 +85,15 @@ exact failure the additive dials were chosen to avoid.
 
 ## D4 — Is the gap linter advisory or blocking?
 
-**OPEN.** `--strict` exits 1 today, but nothing forces its use.
+**SETTLED 2026-08-19** — Both, split by code. Two conditions block; everything else advises.
+Settled by an [independent audit](research/2026-08-19-grok-audit-and-pi-sentiment.md) making the
+argument that a total hard gate makes a one-line handoff impossible, while a total advisory gate
+turns the load-bearing feature into a warning nobody reads.
 
-**Settled by:** dogfooding. If briefs ship with gaps and the work still lands, it is advice; if
-gapped briefs correlate with rework in the outcome log, it becomes a gate.
+Blocking: `objective_empty` always, and `acceptance_missing` when `acceptance_binding >= 0.6`.
+`bliss compile --gate` exits 1 on those; `--strict` still exits 1 on any gap.
 
-- **T4.1 — Pre-dispatch hook that refuses a gapped brief.** FOGGED.
+- **T4.1 — Pre-dispatch hook that refuses a blocking brief.** DIM. Now well-defined enough to build.
 
 ---
 
@@ -103,10 +109,49 @@ default one. One counterexample settles it.
 
 ## D6 — Seven dials, or fewer?
 
-**OPEN.** The honest test: if two dials move together across every real profile, they are one dial.
+**OPEN, now with a measurement.** `bliss correlate` computes pairwise Pearson correlation across
+the installed profiles. Run against the seven shipped profiles:
 
-**Settled by:** correlation across profiles once there are enough of them — including profiles
-written by other people, which is the part that cannot be faked in-house.
+| pair | r | |
+|---|---|---|
+| specificity / verification_rigor | **+0.978** | moves together |
+| acceptance_binding / verification_rigor | **+0.921** | moves together |
+| specificity / acceptance_binding | **+0.904** | moves together |
+| autonomy / escalation_explicitness | −0.632 | independent enough |
+| specificity / decomposition | +0.604 | independent enough |
+| context_volume / anything | ≤ +0.773 | the most independent dial |
+
+An external audit predicted two merges: `acceptance_binding + verification_rigor`, and
+`autonomy + escalation_explicitness`. **The first is supported (+0.921). The second is not
+(−0.632)** — those two move in *opposite* directions, which is what you would expect if
+escalation is what you add when you take autonomy away, rather than a synonym for it. The audit
+also expected `specificity` and `decomposition` to track each other; at +0.604 they are among the
+weakest pairs, while the tightest pair in the whole matrix — `specificity / verification_rigor` at
++0.978 — is one nobody predicted.
+
+**Why this does not settle it.** All seven profiles have one author. A correlation across them
+measures that author's habits, not a property of language models. Merging dials on this evidence
+would repeat the exact error the audit accuses the project of: acting on unmeasured taste while
+calling it a finding.
+
+**Settled by:** the same matrix computed over profiles written by other people, or by the D2 bench
+showing that perturbing two "separate" dials produces indistinguishable outcomes. Until then the
+hypothesis is recorded, not applied.
+
+---
+
+## D7 — Is "prompt compiler" the right positioning?
+
+**OPEN.** The same audit argues it is not: compilers imply IR, optimisation and backends; DSPy
+already owns the term in this space; and the sharpest sentence available is not "we compile
+prompts" but **"we refuse to dispatch a brief the recipient cannot execute."** Its proposal is
+*handoff contract* or *task-contract compiler* — the linter is the product, the dials are the IR.
+
+**Counterargument on the record:** "prompt compiler" is a category people already search for, which
+matters for a project with a reputation goal, and the repo currently reads well under that framing.
+
+**Settled by:** the author. This is a naming and audience decision, not a technical one, and the
+cost of changing it rises with every inbound link.
 
 ---
 

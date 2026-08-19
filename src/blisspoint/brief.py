@@ -36,6 +36,7 @@ class Gap:
     code: str
     message: str
     details: dict = field(default_factory=dict)
+    blocking: bool = False
 
     def __str__(self) -> str:
         return self.message
@@ -95,6 +96,17 @@ class Brief:
     gaps: list = field(default_factory=list)
     fresh_conversation: bool = True
 
+    @property
+    def blocking_gaps(self) -> list:
+        """Gaps that should stop a dispatch rather than warn about it.
+
+        A total hard gate makes a one-line handoff impossible; a total advisory gate
+        makes the load-bearing feature into a warning nobody reads. Only two conditions
+        block: no objective at all, and no acceptance criteria when the recipient's
+        contract is tight.
+        """
+        return [g for g in self.gaps if g.blocking]
+
     def __str__(self) -> str:
         return self.text
 
@@ -133,7 +145,8 @@ def render(task: Task, dials: Dials, profile) -> tuple:
 
     if not task.objective.strip():
         gaps.append(Gap("objective_empty",
-                        "objective is empty — every brief needs one concrete outcome"))
+                        "objective is empty — every brief needs one concrete outcome",
+                        blocking=True))
 
     parts.append(f"# {profile.name.upper()} — {profile.role or 'task'}\n")
 
@@ -236,7 +249,9 @@ def render(task: Task, dials: Dials, profile) -> tuple:
         elif d.acceptance_binding >= 0.3:
             gaps.append(Gap(
                 "acceptance_missing",
-                "no acceptance criteria — there is no observable definition of done"))
+                "no acceptance criteria — there is no observable definition of done",
+                {"acceptance_binding": d.acceptance_binding},
+                blocking=d.acceptance_binding >= 0.6))
 
     if d.verification_rigor >= 0.6:
         if task.verification:
