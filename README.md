@@ -141,11 +141,16 @@ acceptance-criteria pass rate against token cost. Until that exists, the numbers
 
 ## Prior art
 
-- **[DeepSeek Harness](https://thenewstack.io/deepseek-harness-open-source-plugins/)** — everything
-  is a plugin, on Cordis. Owns the runtime. Bliss Point is happy to be one of its plugins.
-- **[pi](https://github.com/earendil-works/pi)** — an agent loop in ~300 lines, layered as
-  framework / harness / runtime. The same instinct about size, applied to the loop rather than the
-  prompt.
+- **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)** — MIT, on vendored
+  Cordis. Verified pluggable at the prompt seam: `ctx.systemPrompt.section()` and the
+  `system-prompt/assemble` and `agent/pre-step` waterfalls. Bliss Point can ship as a plugin there
+  without patching core. (Star counts quoted in press are unverified here.)
+- **[pi](https://github.com/earendil-works/pi)** — MIT. Widely described as "an agent loop in ~300
+  lines"; measured, `packages/agent/src/agent-loop.ts` is **797 lines** inside a ten-package
+  monorepo. The layering is real in code even though the size claim is not: `pi-ai` (completions)
+  / `pi-agent` (loop, tools, sessions) / `pi-tui` + `pi-coding-agent` (interface). Bliss Point
+  imitates that separation and targets pi as a consumer; it does not fork it, because a fork
+  inherits a runtime a compiler has no use for.
 - **[pi-agent-harness](https://github.com/baryonlabs/pi-agent-harness)** — generates specialist
   agents and orchestration prompts from a domain sentence. Adjacent, and it generates a team;
   Bliss Point shapes each handoff to a team you already have.
