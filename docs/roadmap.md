@@ -20,20 +20,27 @@ that is the single most useful thing this tree does.
 
 ## D1 — What surfaces does it ship on?
 
-**OPEN.** Options: pure Python library / + TypeScript renderer / + dsh plugin / all three.
+**SETTLED 2026-08-19** — All three, in this order: Python library, then a dsh plugin, then a
+TypeScript renderer. Settled by a primary-source
+[investigation](research/2026-08-19-harness-investigation.md) that cloned the repositories.
 
-**Settled by:** the antigravity research report — specifically whether dsh's plugin interface can
-express prompt shaping (ST1), and whether pi is worth forking, consuming or imitating (ST3).
-Dispatched 2026-08-19.
+What settled it:
 
-**Provisional lean:** imitate pi's discipline, consume it as an integration target, do not fork —
-a fork inherits the agent loop, which is exactly the part Bliss Point does not have.
+- **dsh's plugin seam is real and named.** `ctx.systemPrompt.section()`, plus the
+  `system-prompt/assemble` and `agent/pre-step` waterfalls, on vendored Cordis with reversible
+  teardown. A prompt-shaping plugin needs no patch to core.
+- **Forking pi is rejected.** Its loop is 797 lines inside a ten-package monorepo. A survive/delete
+  map put loop, tools, sessions, TUI and server in DELETE and left only `prompt-templates.ts` and a
+  model-id list surviving — over 95% deleted on day one. We imitate pi's layering and consume it.
+- **The counterargument is recorded:** forking wins *if* Bliss Point becomes an interactive
+  end-to-end tool. That violates D0, so it loses here and only here. If D0 ever reopens, this
+  decision reopens with it.
 
-- **T1.1 — dsh plugin spike.** FOGGED. Blocked on ST1 confirming real extension points.
-- **T1.2 — TypeScript renderer over the same YAML/Markdown.** FOGGED. Blocked on D1 and on D4,
-  since a template-override system would have to port too.
-- **T1.3 — pi integration example.** FOGGED. Cheap if D1 lands on "consume".
-- **T1.4 — Publish to PyPI.** DIM. Independent of D1; wants a second opinion on the name first.
+- **T1.1 — dsh plugin.** DIM. Hook `system-prompt/assemble`; declare `inject: ['systemPrompt']`.
+- **T1.2 — TypeScript renderer over the same YAML/Markdown.** DIM. Still gated on D3, since
+  template overrides would have to port too.
+- **T1.3 — pi integration example.** DIM.
+- **T1.4 — Publish to PyPI.** DIM. Unblocked by nothing; wants a name check first.
 
 ---
 
@@ -50,6 +57,9 @@ rate against token cost. Until then no benchmark is claimed anywhere in the repo
 - **T2.4 — Publish results including the ones that contradict the profiles.** FOGGED.
 - **T2.5 — Mine the outcome log for shapes that correlate with rework.** FOGGED. Needs volume first,
   which means dogfooding is the prerequisite, not a nice-to-have.
+- **T2.6 — Make stable-before-volatile section order an invariant.** DIM. See
+  [token economy](token-economy.md); the renderer already does it by intuition, and a test should
+  make it a rule so a brief's head stays a reusable cache prefix.
 
 ---
 
