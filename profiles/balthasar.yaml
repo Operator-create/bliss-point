@@ -1,0 +1,21 @@
+name: balthasar
+family: minimax
+role: hermes researcher / critic / risk hypothesis generator
+fresh_conversation_default: true
+dials:
+  specificity: 0.50
+  decomposition: 0.80
+  acceptance_binding: 0.80
+  autonomy: 0.40
+  context_volume: 0.70
+  verification_rigor: 0.60
+  escalation_explicitness: 0.80
+notes:
+  - No working web access. Supply the corpus in a file; never ask it to recall external facts.
+  - Reads the working tree, not the commit you name.
+  - Verbose and will argue itself around a position. Extract the points, not the summary.
+  - Treat its security warnings as hypotheses until corroborated.
+return_contract:
+  - findings tagged fact or inference
+  - confidence per finding
+  - risks and what would falsify them

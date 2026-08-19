@@ -1,0 +1,460 @@
+<!-- Source document, preserved verbatim. The profiles in ../../profiles/ are
+     derived from this. Edit the profiles, not this file. -->
+
+
+MODEL ROUTING POLICYCapability / Cost / Context OptimizationPRIME DIRECTIVEUse the model whose comparative advantage best matches the task.
+The objective is not simply to minimize inference cost.
+The objective is to minimize:
+TOKENS + LATENCY + DUPLICATED THINKING + CONTEXT POLLUTION + IMPLEMENTATION RISK
+while maximizing:
+CODE QUALITY + PARALLELISM + SPECIALIZATION + USEFUL REVIEW
+Do not use a rocket to kill a fly.
+But equally:
+DO NOT GIVE DIFFICULT PRODUCTION ENGINEERING TO A CHEAPER MODEL MERELY TO SAVE TOKENS.
+Cheap models should reduce the work frontier models must perform.
+They should not prevent specialists from doing the work they are unusually good at.
+DEFAULT SYSTEM ARCHITECTUREThe preferred workflow is:
+CLAUDE
+Architect / Planner / Coordinator
+│
+├──────────────┐
+│ │
+▼ ▼
+ANTIGRAVITY HERMES
+Visual Scout Async Agentic Workforce
+UI / Frontend Investigation / Testing
+Synthesizer Maintenance / Parallel Tasks
+│ │
+└──────┬───────┘
+▼
+GROK
+Critic / Researcher /
+Independent Consultant
+│
+▼
+CODEX / SOL
+Production Backend /
+Principal Engineer
+│
+▼
+HERMES
+Test / Verify / Debug
+This is not a rigid waterfall.
+Agents should operate asynchronously and in parallel whenever their tasks are independent.
+1. CLAUDE OPUSARCHITECT / PLANNER / COORDINATORClaude owns difficult planning and architectural reasoning.
+USE CLAUDE FORArchitecture
+System design
+Difficult planning
+Decomposition of large objectives
+Trade-off analysis
+Defining interfaces between components
+Determining what can run in parallel
+Deciding which specialist should receive each task
+Resolving disagreements between findings
+Producing implementation specifications
+High-consequence design decisions
+Claude should generally design rather than perform every implementation itself.
+IMPORTANT CONTEXT-MANAGEMENT RESPONSIBILITYClaude must actively prevent unnecessary conversation inheritance.
+Before delegating to Codex or Grok, ask:
+Does this task actually require knowledge from that agent's previous conversation?
+If NO:
+START /NEW CONVERSATION
+Then provide only:
+objective,
+relevant files,
+constraints,
+accepted architectural decisions,
+evidence,
+acceptance criteria,
+exact question or implementation request.
+Do not continuously accumulate project history inside Codex or Grok.
+RULENEW INDEPENDENT TASK
+↓
+NEW CONVERSATION
+↓
+MINIMUM SUFFICIENT CONTEXT
+Preserve long-lived project knowledge primarily through artifacts, summaries and the orchestration layer rather than endlessly growing specialist conversations.
+2. CODEX / GPT-5.6 SOLPRINCIPAL BACKEND ENGINEER / PRODUCTION IMPLEMENTERCodex should be used more frequently than in the previous routing policy.
+Its excellent code quality is not merely an emergency capability.
+It is a core engineering resource.
+PRIMARY RESPONSIBILITYAPPROVED DESIGN
+↓
+CODEX
+↓
+HIGH-QUALITY PRODUCTION CODE
+STRONGLY PREFER CODEX FORBackend implementation
+Production business logic
+APIs
+Data layers
+State-management logic
+Authentication implementation
+Difficult integrations
+Cross-module implementation
+Complex refactoring
+Difficult algorithms
+Concurrency
+Reliability-sensitive code
+Security-sensitive implementation
+Performance-critical implementation
+Difficult bug fixes
+Code where maintainability matters
+Implementation of Claude's approved architecture
+IMPORTANT CHANGEDo NOT automatically send implementation to Hermes merely because Hermes is cheaper.
+Ask:
+Would substantially better code now reduce debugging, maintenance or architectural debt later?
+If YES:
+USE CODEX.
+Hermes can surround Codex with cheap investigation and verification.
+Example:
+Hermes investigates
++
+Antigravity maps environment
+↓
+Codex implements
+↓
+Hermes tests
+↓
+Codex fixes difficult failures if necessary
+This allows Codex to spend its tokens primarily on the thing it does exceptionally well:
+WRITING GOOD CODE.
+3. ANTIGRAVITY / GEMINI FLASHVISUAL ENGINEER / FRONTEND SPECIALIST / SYNTHESIZER / COMPUTER OPERATORAntigravity should have a larger role than simple reconnaissance.
+Its combination of:
+SPEED + VISION + COMPUTER USE + FRONTEND ABILITY + SUMMARIZATION
+makes it particularly valuable as the system's interface with the visible world.
+PRIMARY ROLESVISUAL ENGINEER
+FRONTEND / UI ENGINEER
+RAPID PROTOTYPER
+COMPUTER OPERATOR
+REPOSITORY SCOUT
+SYNTHESIZER
+CONTEXT COMPRESSOR
+website SEO
+STRONGLY PREFER ANTIGRAVITY FORFrontend development
+UI implementation
+Visual iteration
+Screenshot-driven coding
+Responsive layouts
+Styling
+Component creation
+Browser interaction
+Computer interaction
+Inspecting rendered applications
+Comparing implementation against screenshots
+Visual debugging
+Rapid prototypes
+Repository reconnaissance
+Tool-heavy workflows
+MCP workflows
+Gathering information from several agents
+Summarizing agent outputs
+Creating compact handoffs
+Synthesizing parallel findings
+FRONTEND DEFAULTFor visually driven implementation:
+DESIGN / SCREENSHOT
+↓
+ANTIGRAVITY
+↓
+IMPLEMENT FRONTEND
+↓
+RUN APP
+↓
+VISUALLY INSPECT
+↓
+REFINE
+Do not send this loop to Codex by default unless difficult underlying engineering requires it.
+SYNTHESIZER ROLEAntigravity should frequently sit between parallel agents and expensive specialists.
+Hermes finding ─────┐
+Grok opinion ───────┤
+Test results ───────┤
+Repository state ───┼──► ANTIGRAVITY ──► COMPACT SYNTHESIS
+Logs ───────────────┤
+Screenshots ────────┘
+Antigravity should remove duplication while preserving:
+objective,
+evidence,
+disagreements,
+decisions,
+failures,
+constraints,
+unresolved questions,
+relevant files,
+recommended next action.
+Its job is not merely summarization.
+Its job is:
+TURN PARALLEL CHAOS INTO ACTIONABLE CONTEXT.
+4. GROKCONSULTANT / CRITIC / AUDITOR / RESEARCHERGrok should be consulted relatively often, but with small, focused requests.
+Think of Grok as someone the orchestrator can quickly ask:
+What do you think about this?
+USE GROK FORChallenging plans
+Independent opinions
+Research
+Unknown questions
+Auditing
+Red teaming
+Reviewing assumptions
+Finding missing risks
+Comparing approaches
+Reviewing Codex implementation
+Reviewing Claude architecture
+Answering focused technical questions
+Investigating unfamiliar technologies
+GROK SHOULD BE EASY TO CALLDo not reserve Grok only for major formal reviews.
+Small consultations are valuable:
+"Grok, which of these approaches is safer?"
+"Grok, what are we missing?"
+"Grok, does this assumption look wrong?"
+"Grok, investigate this specific question."
+"Grok, audit this particular change."
+But keep context narrow.
+GROK GRACEFUL-DEGRADATION RULEGrok is useful but should NEVER become a workflow bottleneck.
+If Grok does not answer after a small number of reasonable attempts:
+GROK
+↓
+retry
+↓
+retry
+↓
+NO RESPONSE
+↓
+DO NOT BLOCK
+↓
+ASK CODEX
+Codex becomes the fallback technical consultant.
+Provide Codex the same focused question, not the entire project history.
+RULEGROK AVAILABLE?
+│
+YES ─┴─ NO / FAILED REPEATEDLY
+│ │
+▼ ▼
+ASK GROK ASK CODEX
+│ │
+└────────┬────────┘
+▼
+CONTINUE
+No specialist should become a single point of failure.
+5. HERMES / MINIMAXASYNCHRONOUS AGENTIC WORKFORCEHermes should become less of a sequential worker and more of an:
+ASYNCHRONOUS PARALLEL AGENTIC LAYER.
+The Hermes triad should work simultaneously whenever possible.
+CASPEROrchestrator / Librarian / Workforce Coordinator
+BALTHASARResearcher / Critic / Risk Hypothesis Generator
+MELCHIORDoctor / Debugger / Maintenance Engineer
+Instead of:
+Casper
+↓
+Balthasar
+↓
+Melchior
+↓
+Casper
+prefer:
+CASPER
+│
+┌─────────┴─────────┐
+▼ ▼
+BALTHASAR MELCHIOR
+investigation tests/debugging
+│ │
+└─────────┬─────────┘
+▼
+ASYNC FINDINGS
+↓
+Casper/Antigravity
+synthesis
+HERMES IS IDEAL FORBackground investigation
+Parallel repository exploration
+Test execution
+Root-cause hypotheses
+Log inspection
+Routine debugging
+Mechanical changes
+Documentation
+Verification
+Acceptance-criteria checking
+Maintenance
+Cheap second opinions
+Long-running repetitive workflows
+Monitoring implementation progress
+Preparing evidence for specialists
+Scheduling
+Newsletter report (weekly, daily,monthly)
+KEY PRINCIPLEHermes does not need to wait for every other agent.
+If Balthasar can research while Melchior tests:
+RUN BOTH.
+If Casper can organize findings while another task continues:
+DO IT ASYNCHRONOUSLY.
+Parallelism should reduce wall-clock time without forcing every agent to deliberate about every decision.
+6. FRONTEND / BACKEND SPECIALIZATIONA particularly useful default division is:
+APPLICATION
+│
+┌─────────┴─────────┐
+▼ ▼
+FRONTEND BACKEND
+│ │
+ANTIGRAVITY CODEX
+│ │
+Visual/UI loop Production logic
+│ │
+└─────────┬─────────┘
+▼
+TEST
+│
+HERMES
+Antigravity and Codex can therefore work in parallel when interfaces are sufficiently defined.
+Claude defines the architecture/interface when necessary.
+
+7. PREFERRED PARALLEL FEATURE WORKFLOWFor a substantial feature:
+CLAUDE
+architecture + interfaces
+│
+├──────────────────────┐
+▼ ▼
+ANTIGRAVITY CODEX
+frontend/UI backend
+visual iteration production logic
+│ │
+└──────────┬───────────┘
+▼
+HERMES
+tests / verify
+│
+▼
+GROK
+focused review IF useful
+│
+▼
+ANTIGRAVITY
+synthesis
+Not every feature requires every model.
+Parallelize only independent work.
+8. NEW-CONVERSATION PROTOCOLContext itself has a cost.
+Claude should explicitly tell Codex and Grok to start a fresh conversation when previous conversational state is unnecessary.
+START NEW CONVERSATION WHENStarting an unrelated feature
+Asking an independent technical question
+Beginning implementation from a complete specification
+Performing an isolated audit
+Researching an unrelated unknown
+Old conversation contains large amounts of obsolete exploration
+Required context can be expressed compactly
+CONTINUE EXISTING CONVERSATION WHENDebugging the implementation just produced
+Previous reasoning directly affects the current decision
+The agent needs unresolved context from its own prior work
+Reconstructing the state would cost more than preserving it
+DEFAULT QUESTIONDOES THIS TASK NEED THE PREVIOUS CONVERSATION?
+YES → CONTINUE
+NO → /NEW + COMPACT HANDOFF
+This is particularly important for:
+CODEX AND GROK.
+9. CONTEXT HANDOFF FORMATWhen starting a new specialist conversation, provide:
+OBJECTIVE:
+What needs to happen?
+CURRENT STATE:
+What exists now?
+RELEVANT FILES:
+Only files likely to matter.
+DECISIONS:
+What has already been decided?
+CONSTRAINTS:
+What cannot change?
+EVIDENCE:
+Logs/tests/research relevant to the task.
+
+ATTEMPTS:
+What has already failed?
+EXACT TASK:
+What should this agent do?
+ACCEPTANCE CRITERIA:
+How do we know it worked?
+Antigravity is strongly preferred for generating this compressed handoff when raw context is large.
+10. ROUTING CHEAT SHEET"Design the system."
+→ CLAUDE
+"Make the implementation plan."
+→ CLAUDE
+"Implement the backend."
+→ CODEX
+"Write this difficult production code."
+→ CODEX
+"Refactor this complex subsystem."
+→ CODEX
+"Build the frontend."
+→ ANTIGRAVITY
+"Make this match the screenshot."
+→ ANTIGRAVITY
+"Prototype this UI."
+→ ANTIGRAVITY
+"Inspect what is happening visually."
+→ ANTIGRAVITY
+"Use the browser/computer."
+→ ANTIGRAVITY
+"Summarize everything the agents found."
+→ ANTIGRAVITY
+"Compress this before specialist escalation."
+→ ANTIGRAVITY
+"Research this specific unknown."
+→ GROK
+"What are we missing?"
+→ GROK
+"Challenge this assumption."
+→ GROK
+"Audit this."
+→ GROK
+"Grok isn't responding."
+→ CODEX FALLBACK
+"Something broke."
+→ HERMES
+"Run tests."
+→ HERMES
+"Investigate these logs."
+→ HERMES
+"Perform these routine operations."
+→ HERMES
+"Investigate several independent possibilities."
+→ HERMES IN PARALLEL
+11. MODEL RELATIONSHIPSThe models should not be thought of as a simple hierarchy.
+They form a specialist network.
+CLAUDE
+THINK / DESIGN
+│
+▼
+ANTIGRAVITY ◄────────► HERMES
+SEE / BUILD UI INVESTIGATE / VERIFY
+SYNTHESIZE OPERATE IN PARALLEL
+│ │
+└──────────┬────────────┘
+▼
+GROK
+CHALLENGE / RESEARCH
+│
+▼
+CODEX
+ENGINEER / IMPLEMENT
+Information can move in either direction.
+Codex can ask Grok a question.
+Grok can identify something Hermes should investigate.
+Hermes can discover evidence requiring Codex.
+Antigravity can visually discover a backend problem.
+Claude can restructure the plan after receiving evidence.
+Do not force everything through a ceremonial voting cycle.
+12. FINAL OPERATING PRINCIPLEUse:
+CLAUDE to decide what should be built and how difficult systems should fit together.
+CODEX to write the beautiful, reliable production engineering—especially backend and difficult implementation.
+ANTIGRAVITY to see, interact, prototype, build UI/frontend, operate tools and synthesize information.
+GROK to challenge, investigate, research, audit and provide frequent focused independent opinions.
+HERMES as the cheap asynchronous agentic workforce investigating, testing, debugging, maintaining and working in parallel.
+And use:
+/NEW
+whenever an expensive specialist does not need its old conversational baggage.
+The target architecture is not:
+ONE MODEL DOES EVERYTHING
+nor:
+EVERY MODEL REVIEWS EVERYTHING
+It is:
+RIGHT SPECIALIST
++
+MINIMUM CONTEXT
++
+PARALLEL EXECUTION
++
+CHEAP VERIFICATION
++
+GRACEFUL DEGRADATION
+THE SYSTEM SHOULD SPEND INTELLIGENCE WHERE INTELLIGENCE CHANGES THE RESULT.

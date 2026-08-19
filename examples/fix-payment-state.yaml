@@ -1,0 +1,26 @@
+objective: Payment state desyncs when the webhook retries, leaving orders stuck in "pending".
+current_state: |
+  Webhook handler is idempotent by event id but the order state machine is not;
+  a retried capture event re-enters the pending branch.
+files:
+  - api/payments/webhook.py
+  - api/orders/state.py
+decisions:
+  - The public API contract does not change.
+  - Idempotency stays keyed on the provider event id.
+constraints:
+  - No new database columns.
+non_goals:
+  - Refactoring the order state machine wholesale.
+evidence: |
+  Sentry PAY-4471: 38 orders stuck pending over 6 days, all with >=2 capture events.
+attempts: |
+  Adding a dedupe set in the handler; it moved the race rather than closing it.
+instructions: |
+  Make the capture transition idempotent at the state-machine boundary, not in the
+  handler, so any retried event converges on the same terminal state.
+acceptance:
+  - Replaying a capture event twice leaves the order in "paid" exactly once.
+  - The 38 stuck orders reconcile when their events are replayed.
+  - No change to the public API contract.
+verification: pytest tests/payments -k retry, then replay the PAY-4471 fixture.

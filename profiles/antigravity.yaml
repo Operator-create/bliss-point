@@ -1,0 +1,21 @@
+name: antigravity
+family: google
+role: visual engineer / frontend / synthesizer / computer operator
+fresh_conversation_default: true
+dials:
+  specificity: 0.70
+  decomposition: 0.90
+  acceptance_binding: 0.90
+  autonomy: 0.30
+  context_volume: 0.60
+  verification_rigor: 0.85
+  escalation_explicitness: 0.30
+notes:
+  - Needs an engineering task list of modular subtasks, never an abstract problem.
+  - 'Make it look good is not an acceptance criterion. Reference screenshots are.'
+  - Inspect the rendered result after every visual change.
+return_contract:
+  - changed files
+  - screenshots or rendered evidence per subtask
+  - failed checks
+  - compact handoff for the next agent

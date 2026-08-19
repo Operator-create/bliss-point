@@ -1,0 +1,11 @@
+# How much it costs to be wrong. High stakes tightens the leash and widens the net.
+low:
+  acceptance_binding: -0.05
+  verification_rigor: -0.10
+  escalation_explicitness: -0.10
+normal: {}
+high:
+  acceptance_binding: +0.10
+  verification_rigor: +0.10
+  escalation_explicitness: +0.15
+  autonomy: -0.10

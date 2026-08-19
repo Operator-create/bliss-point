@@ -1,0 +1,21 @@
+name: claude
+family: anthropic
+role: architect / planner / coordinator
+fresh_conversation_default: false
+dials:
+  specificity: 0.20
+  decomposition: 0.30
+  acceptance_binding: 0.30
+  autonomy: 0.90
+  context_volume: 0.50
+  verification_rigor: 0.30
+  escalation_explicitness: 0.20
+notes:
+  - Give it a decision problem, not an implementation order.
+  - Over-prescribing implementation before architecture is the classic misuse.
+return_contract:
+  - architecture and interfaces
+  - work that can run in parallel
+  - engineering task lists for the executing agents
+  - acceptance criteria
+  - open questions it could not settle

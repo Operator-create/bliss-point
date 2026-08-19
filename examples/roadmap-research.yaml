@@ -1,0 +1,6 @@
+objective: Decide whether Bliss Point should ship as dsh plugins as well as a Python library.
+open_decisions:
+  - Whether the tier engine belongs in the harness or beside it.
+  - Whether a TypeScript port is worth maintaining in parallel.
+constraints:
+  - The Markdown templates must stay the single source of truth for both ports.

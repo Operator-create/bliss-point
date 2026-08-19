@@ -1,0 +1,22 @@
+name: grok
+family: xai
+role: consultant / critic / auditor / researcher
+fresh_conversation_default: true
+dials:
+  specificity: 0.35
+  decomposition: 0.10
+  acceptance_binding: 0.30
+  autonomy: 0.60
+  context_volume: 0.20
+  verification_rigor: 0.40
+  escalation_explicitness: 0.10
+notes:
+  - One focused question with a stated decision it should inform. Keep context narrow.
+  - Ask it to separate observation from inference and to state confidence and sampling bias.
+  - Must never become a bottleneck; fall back to codex after a few non-responses.
+return_contract:
+  - conclusion
+  - strongest supporting evidence
+  - the counterargument
+  - confidence and what would change it
+  - recommended next action

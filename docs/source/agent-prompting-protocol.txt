@@ -1,0 +1,172 @@
+<!-- Source document, preserved verbatim. The profiles in ../../profiles/ are
+     derived from this. Edit the profiles, not this file. -->
+
+
+COMPANION PROTOCOL
+Agent Prompting Protocol
+How to brief each specialist with the right structure, context and degree of autonomy
+PURPOSE: This file complements the Model Routing Policy. The routing policy decides who should receive a task; this protocol defines how that agent should be prompted.
+1. Prime Directive
+Do not send the same generic prompt to every model. Prompt structure is part of routing. The same task should be packaged differently according to how each agent reasons, acts and consumes context.
+Agent
+Best prompt shape
+Primary output
+Claude
+Problem + constraints + decisions required
+Architecture or implementation specification
+Codex / Sol
+Direct implementation command + boundaries + acceptance criteria
+Working production code
+Antigravity
+Engineering task list with modular subtasks
+UI, prototype, visual/tool workflow or synthesis
+Grok
+Focused question; direct brief for research
+Opinion, audit, research, trends or sentiment
+Hermes
+Engineering task list with modular subtasks
+Parallel investigation, testing, debugging or maintenance
+
+CORE RULE: Codex needs to be told what to do. Antigravity and Hermes need an executable engineering task list. Grok usually needs a question. Claude needs a decision problem with enough freedom to design the solution.
+2. Universal Minimum-Sufficient Context
+Every handoff should include only the information needed to act correctly. Delete history that does not change the task.
+Objective — the concrete outcome, not the broad project ambition.
+Current state — what exists and what is already working.
+Relevant files or surfaces — only likely touchpoints.
+Accepted decisions — choices that must not be reopened without evidence.
+Constraints and non-goals — what cannot change and what is outside scope.
+Evidence and attempts — logs, screenshots, tests and failed approaches that matter.
+Required output — code, plan, findings, questions, test evidence or synthesis.
+Acceptance criteria — observable proof that the work is complete.
+CONTEXT HYGIENE: For an independent Codex or Grok task, prefer /NEW and provide a compact handoff. Continue the old conversation only when its unresolved reasoning or freshly produced implementation is necessary.
+3. The Engineering Task List Contract
+Use this contract for Antigravity and Hermes. It is also useful when Claude prepares work for them. A task list is not a loose checklist: every subtask must be modular and individually testable.
+Required structure for every subtask
+Subtask ID and action title — one verb-led unit of work.
+Purpose — why this unit exists and what larger outcome it supports.
+Scope — exact files, component, screen, command, workflow or evidence source.
+Dependencies — prior subtasks or decisions required before starting.
+Implementation instructions — enough detail to act without inventing scope.
+Acceptance criteria — observable, binary checks for this subtask alone.
+Test or verification method — command, inspection, screenshot comparison or evidence to collect.
+Handoff output — what the agent must return so another agent can continue.
+MODULARITY TEST: If a subtask cannot be tested on its own, split it. If completing it requires silently redesigning another subtask, the interface or dependency is not defined well enough.
+Reusable subtask template
+SUBTASK [ID] — [ACTION TITLE]Purpose: [why it matters]Scope: [files/components/surfaces]Dependencies: [none or explicit IDs]Instructions: [what to do]Acceptance criteria:• [observable pass condition]• [observable pass condition]Verification: [test/command/visual check]Return: [changed files, evidence, findings and blockers]
+4. Claude — Architect / Planner / Coordinator
+Claude should receive the problem to solve, the boundaries and the decisions it owns. Do not over-prescribe implementation before asking it to reason about architecture.
+Prompt Claude with
+The desired system outcome and why it matters.
+Existing architecture, invariants and relevant constraints.
+Known risks, trade-offs and open questions.
+The decisions Claude is authorized to make.
+Required artifacts: interfaces, plan, task decomposition, parallel lanes and acceptance criteria.
+Avoid
+Asking for implementation when the real need is architectural clarity.
+Giving a vague ambition without current-state evidence.
+Forcing every specialist into the plan when the task does not need them.
+Letting Claude pass the full conversation history instead of a compact specialist brief.
+Template
+Design an implementation approach for [objective]. Current state: [state]. Constraints: [constraints]. Preserve: [invariants]. Decide: [open decisions]. Produce: architecture, interfaces, parallelizable work, engineering task lists for Antigravity/Hermes, a direct implementation brief for Codex, focused questions for Grok, and acceptance criteria. Do not implement unless requested.
+5. Codex / GPT-5.6 Sol — Principal Production Implementer
+PROMPTING STYLE: Be direct. Tell Codex exactly what to implement, fix or refactor. Give it ownership of implementation details inside clear architectural and scope boundaries.
+Prompt Codex with
+An imperative task: implement, fix, refactor, integrate or optimize.
+Relevant files and interfaces, plus permission to inspect nearby code when needed.
+Accepted architecture and constraints that must remain stable.
+Observable acceptance criteria and the tests to run.
+Known failures and prior attempts, when relevant.
+A clear instruction to complete and verify the change, not merely explain it.
+Avoid
+Open-ended prompts such as ‘What do you think we should do?’ when implementation is already decided.
+A giant engineering task list that micromanages every coding move.
+Mixing unrelated work into one prompt.
+Sending the entire project history instead of the approved specification and relevant evidence.
+Asking only for a plan when the goal is working code.
+Template
+Implement [exact change]. Work in [repo/path]. Preserve [interfaces/invariants]. Relevant files: [files]. Constraints: [constraints]. Known evidence: [logs/tests]. Complete the implementation, run [tests/checks], fix failures within scope, and report changed files plus verification. Acceptance criteria: [criteria].
+6. Antigravity / Gemini Flash — Visual Engineer and Synthesizer
+PROMPTING STYLE: Give Antigravity an engineering task list made of modular, individually testable subtasks. Include visual references, tool surfaces and synthesis rules where relevant.
+Prompt Antigravity with
+A concrete visual, frontend, browser, computer-use or synthesis objective.
+Modular subtasks following the Engineering Task List Contract.
+Screenshots, target states, breakpoints, components and interaction rules.
+Permission and boundaries for visual iteration: run, inspect, compare and refine.
+For synthesis: required facts to preserve—objective, evidence, disagreement, decisions, failures, constraints, unresolved questions, files and next action.
+Avoid
+A long abstract problem with no executable task list.
+Subjective acceptance criteria such as ‘make it look good.’
+Combining visual implementation with difficult backend redesign unless interfaces are already defined.
+Asking for a summary without stating what information must survive compression.
+Template
+Objective: [visual/tool/synthesis outcome]. Execute the following modular subtasks in order or in parallel where dependencies allow. For each subtask, follow its scope, acceptance criteria and verification method. Inspect the rendered result after every visual change. Return changed files, screenshots or evidence, failed checks, unresolved questions and a compact handoff.
+7. Hermes / MiniMax — Asynchronous Agentic Workforce
+PROMPTING STYLE: Give Hermes an engineering task list with modular, individually testable subtasks, explicit ownership and permission to work asynchronously when dependencies allow.
+Prompt Hermes with
+Small or medium tasks with explicit scope, evidence sources and outputs.
+Independent subtasks that Casper can assign to Balthasar and Melchior in parallel.
+Acceptance criteria inside every subtask—not only at the end of the full task.
+Commands, logs, files or tests to inspect and the evidence format to return.
+Escalation triggers: architectural uncertainty, security-sensitive change, broad refactor or repeated failure.
+Role-specific emphasis
+Hermes agent
+Best brief
+Casper
+Coordinate the task list, dependencies, evidence and handoffs; synthesize without ceremonial voting.
+Balthasar
+Investigate named hypotheses, corroborate claims, identify risks and return confidence plus evidence.
+Melchior
+Reproduce, test, debug, make bounded maintenance fixes and return commands, results and residual risk.
+
+Avoid
+One giant outcome with no subtasks.
+Subtasks that can only be verified after all other work finishes.
+Treating speculative findings as facts—especially security warnings; corroborate them.
+Requiring every agent to vote on every decision.
+Allowing cheap implementation to drift into difficult production engineering that should be escalated to Codex.
+Template
+Objective: [outcome]. Casper: coordinate the following modular subtasks. Run independent subtasks asynchronously. Each subtask includes scope, dependencies, instructions, acceptance criteria, verification and return format. Balthasar owns [investigation/critique]. Melchior owns [tests/debugging/maintenance]. Escalate to Codex if [triggers]. Return evidence, confidence, blockers and a compact synthesis.
+8. Grok — Focused Consultant, Researcher and Trend Reader
+PROMPTING STYLE: Ask Grok a focused question. The exception is a clear research request, which may be phrased directly. Keep the context narrow and specify the decision the answer should inform.
+Excellent Grok prompt shapes
+Decision question — ‘Which approach is safer under these constraints, and why?’
+Gap question — ‘What are we missing in this plan?’
+Audit question — ‘What failure modes or unsupported assumptions do you see in this change?’
+Direction question — ‘Given this evidence, what should we investigate next?’
+Direct research request — ‘Research [specific unknown] and report evidence, uncertainty and implications.’
+Trend request — ‘Identify emerging patterns around [topic], distinguish durable signals from hype, and show supporting evidence.’
+Sentiment request — ‘Assess current sentiment among [audience] about [topic], separate positive, negative and mixed themes, and explain sampling limitations.’
+Grok is especially valuable for discovering trends and sentiment because it can connect scattered public signals, recurring narratives and emerging reactions. Always ask it to separate observation from inference and to state confidence, time window, source mix and likely sampling bias.
+Avoid
+‘Review everything’ with the entire project history.
+A broad coding assignment when the main need is production implementation.
+Questions with no decision context or success condition.
+Treating online sentiment as representative without asking about source and sampling bias.
+Blocking the workflow after repeated non-response; use the Codex fallback.
+Templates
+Consultation: [Focused question]? Context: [minimum facts]. Constraints: [constraints]. Evaluate [options/assumption/change]. Return your conclusion, strongest evidence, counterargument, uncertainty and recommended next action.
+Research/trends/sentiment: Research [topic] across [time window/audience/source types]. Identify recurring themes, emerging trends and sentiment. Separate evidence from inference; distinguish durable signals from hype; note bias and confidence; cite sources; conclude with implications for [decision].
+9. Prompt Conversion Examples
+Weak generic request
+Specialist-ready version
+Fix the backend.
+Codex: Implement the specified payment-state fix in the named modules; preserve the API contract; run the listed tests; satisfy the stated pass conditions.
+Make the UI better.
+Antigravity: Execute modular subtasks for layout, component states and responsive checks; compare each against the reference screenshots; return visual evidence.
+Investigate the bug.
+Hermes: Split reproduction, log inspection, hypothesis checks and regression tests into independently verifiable subtasks; run independent checks asynchronously.
+Review the plan.
+Grok: What are the three most consequential hidden risks in this plan, and which one should be tested first?
+What do people think?
+Grok: Assess current developer sentiment about [topic] over [window]; group themes, quantify cautiously, identify sampling bias and separate trend from hype.
+
+10. Completion and Handoff Standard
+Every agent response should make the next action cheap. Require the following where applicable:
+Result — what changed, was decided or was learned.
+Evidence — tests, commands, screenshots, sources or reproducible observations.
+Acceptance status — pass or fail for each criterion or subtask.
+Files and interfaces — exact locations touched or implicated.
+Uncertainty and blockers — what remains unknown and why.
+Recommended next action — implement, investigate, escalate, verify or stop.
+Context compression — enough state for a new conversation without inherited baggage.
+FINAL PRINCIPLE: The routing policy selects the specialist. This protocol shapes the request so that specialist can do its best work with minimum wasted context.

@@ -1,0 +1,31 @@
+# Additive deltas applied on top of a profile's base dials.
+# A phase changes what the work *is*, so it moves the point even for the same agent.
+research:
+  specificity: -0.10
+  autonomy: +0.10
+  context_volume: +0.10
+  verification_rigor: -0.05
+design:
+  specificity: -0.20
+  decomposition: -0.10
+  autonomy: +0.20
+implement:
+  specificity: +0.15
+  acceptance_binding: +0.10
+  verification_rigor: +0.10
+  autonomy: -0.10
+review:
+  specificity: -0.10
+  decomposition: -0.20
+  autonomy: +0.15
+  context_volume: -0.10
+verify:
+  specificity: +0.10
+  acceptance_binding: +0.15
+  verification_rigor: +0.15
+  autonomy: -0.15
+synthesize:
+  decomposition: -0.30
+  context_volume: +0.20
+  verification_rigor: -0.20
+  specificity: -0.05

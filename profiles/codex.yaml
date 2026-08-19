@@ -1,0 +1,21 @@
+name: codex
+family: openai
+role: principal engineer / production implementer
+fresh_conversation_default: true
+dials:
+  specificity: 0.75
+  decomposition: 0.35
+  acceptance_binding: 0.80
+  autonomy: 0.45
+  context_volume: 0.35
+  verification_rigor: 0.85
+  escalation_explicitness: 0.30
+notes:
+  - Imperative task, hard boundaries, then let it own the implementation details.
+  - A giant task list micromanaging every coding move wastes what it is good at.
+  - Expensive. Reserve it for work where better code now prevents debt later.
+  - Scoped to implementation cost over real files, it is also a strong planning voice.
+return_contract:
+  - changed files
+  - verification output for each check that was run
+  - failures it could not fix inside scope
