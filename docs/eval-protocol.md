@@ -15,9 +15,16 @@ constraints and a return contract; a one-line request does not. Comparing those 
 context helps"*, which is already known and is not the claim. Everything below exists to strip that
 confound out.
 
-**The claim dies if** a brief compiled for the *wrong* recipient performs as well as one compiled
-for the right one. That is not a hypothetical framing — it is arm M, and it is the reason to run
-this at all.
+**The claim dies if** the shape preference does not differ across recipients — if a small execution
+model and a frontier reasoning model want the same brief. That is the interaction in §3, and it is
+the primary falsifier.
+
+A second, sharper falsifier attacks the mechanism rather than the matching: if flipping *one* dial
+across the threshold where it actually changes the rendered document has no effect on how the agent
+behaves, that dial is decoration. That is arm A in §2.
+
+*(An earlier draft made "a brief compiled for the wrong profile does as well as the right one" the
+fulcrum. It was struck — see Amendment 1.)*
 
 ## 2. Four arms, information-matched
 
@@ -29,9 +36,21 @@ rendering differs.
 | **R — Raw** | The request as a person actually types it. One or two lines. | The floor. What we do today. |
 | **F — Flat** | Every `Task` field, rendered into one fixed generic template. No per-recipient variation. | **The real control.** Same information, no shaping. |
 | **C — Compiled** | `bliss compile(task, target=<the model actually running>)`. | The product. |
-| **M — Mis-shaped** | Compiled against a deliberately wrong profile — a goal-shaped researcher brief sent to an executor, and vice versa. | **The falsifier.** If C ≈ M, the dials are decoration and only field-gathering mattered. |
+| **A — Ablated** | C with exactly **one** dial moved across the threshold where it changes the rendered document. Everything else identical. | **The mechanism falsifier.** If the flip changes nothing, that named dial is decoration. |
 
-Primary comparison: **C vs F**. Falsifier: **C vs M**. Floor: **R**.
+Primary comparison: **C vs F** (shaping vs information). Mechanism falsifier: **C vs A**. Matching
+falsifier: the tier interaction in §3. Floor: **R**.
+
+The ablated dial is the one that cell's prediction names, not a tour of all seven:
+
+| cell | dial flipped | threshold | what changes in the brief |
+|---|---|---|---|
+| small models | `decomposition` | 0.6 | subtask list vs one Task section |
+| frontier models | `autonomy` | 0.6 | "Decisions you own" vs prescribed |
+
+Arm A is registered on **`scope_violations` and `steps`**, not on pass@1 — continuous metrics are
+the ones with power at n=20 (§7). The resolved seven-vector for every run is logged, so the
+ablation is auditable rather than described.
 
 Arm F requires a `flat` renderer that emits every section unconditionally — roughly thirty lines,
 and it must be written *before* the tasks are chosen, so it cannot be tuned to lose.
@@ -102,6 +121,11 @@ Rules that make a task admissible:
    difficulty, not shape. Pilot each task once on Tier A under arm C; drop tasks that fail flat.
 4. **No task authored while looking at the dials.** Tasks come from real bug reports and real
    feature requests, otherwise they encode the hypothesis.
+5. **Union-complete, and gap-free in every arm.** The `Task` carries the union of every field any
+   arm in that cell would demand, filled once and frozen. A task enters the corpus only if **every
+   arm compiles with `blocking_gaps == []`**. Otherwise an arm loses for being incomplete rather
+   than for being shaped differently, which is exactly the confound arm F exists to remove.
+   Advisory gaps are recorded as a covariate.
 
 ## 5. Metrics
 
@@ -216,17 +240,16 @@ Declared now, so they cannot be moved later.
 | C vs F | pass@1 | ≥ +20 percentage points, paired |
 | C vs F | input tokens at equal pass rate | ≥ −20% |
 | C vs F | steps at equal pass rate | ≥ −15% |
-| C vs M | pass@1 | **KNOWN DEFECT — see below.** |
-| C vs M | scope_violations | M > C, in the predicted direction per tier |
+| C vs A | scope_violations | paired bootstrap median difference, 95% CI excluding 0 |
+| C vs A | steps | paired bootstrap median difference, 95% CI excluding 0 |
+| C vs A | pass@1 | directional only, never a headline |
 | Tier A vs Tier B | (C − F) | different in *sign or magnitude*, or the thesis is false |
 
-**Known defect in this table, recorded rather than smoothed over.** The first draft required
-"C − M ≥ +15pp" as the falsifier while simultaneously stating that 20 paired tasks resolve only a
-25–30 point binary effect. Those two statements contradict each other: the falsifier as written
-**cannot fire at the planned sample size**. Either the falsifier moves to continuous metrics, which
-have the power at n=20, or n rises for that comparison specifically, or arm M is replaced. This is
-under external audit and the row stays marked defective until it is resolved. It is left visible on
-purpose — a pre-registration that quietly repairs itself is not a pre-registration.
+**The defect that produced Amendment 1.** The first draft required "C − M ≥ +15pp" while also
+stating that 20 paired tasks resolve only 25–30 points. The falsifier could not fire at the planned
+sample size. The audit's ranking was that this was the *second* problem, not the first — powering a
+straw man just produces a well-powered straw man — so the row was not repaired, it was removed
+along with the arm.
 
 **Statistics.** Paired per task. Binary outcomes: McNemar on discordant pairs, plus a paired
 bootstrap CI. Continuous outcomes (tokens, steps): paired bootstrap, reported as median difference
@@ -253,8 +276,9 @@ provider's current published rates at execution time and record the figures in t
 
 Written down now, while it is still cheap to be honest:
 
-- **C ≈ M** — shape does not matter, only field-gathering does. Keep the linter, delete the dials,
-  and D7's positioning is already correct.
+- **C ≈ A** — flipping the dial this cell claims is causal changes nothing measurable. That dial is
+  decoration and gets deleted by name, which is a sharper outcome than a vague "the dials are
+  wrong".
 - **Both tiers prefer the same shape** — the interaction does not exist; there is one good brief
   format, not a per-recipient one.
 - **F ≈ C and both ≫ R** — a fixed rich template is enough; Bliss Point becomes one template and a
@@ -272,3 +296,43 @@ reproducible.
 4. The scorers: hidden tests, scope diff, blind judge.
 5. Pilot on 3 tasks × 4 arms × Tier A. Fix the instrumentation, **not the hypothesis**.
 6. Full Tier A. Decide whether Tier B is worth it.
+
+
+---
+
+## 11. Amendment log
+
+Amendments are numbered, dated and public. Nothing in this document is edited silently; a
+pre-registration that quietly repairs itself is not a pre-registration.
+
+### Amendment 1 — 2026-08-20 — arm M struck, arm A added
+
+**What changed.** The mis-shaped arm (compile against a deliberately wrong profile) is removed from
+the design. The fourth slot becomes a one-dial ablation. The claim no longer dies on C ≈ M; the
+matching falsifier is the tier interaction in §3, and the mechanism falsifier is arm A.
+
+**Why.** An [independent audit](research/2026-08-20-arm-m-audit.md) ranked three known threats and
+found the first fatal: as specified, arm M was a straw man the product could not lose to. The
+shipped profiles make the cross-role jump extreme — `claude` and `antigravity` at `implement`
+differ by an L1 of 2.30 across the four load-bearing dials, which drops the renderer into a single
+"Design an approach for: {objective}" section against a profile whose own notes say it needs a task
+list and never an abstract problem. Beating that demonstrates "do not send an architecture brief to
+a frontend engineer", which routing already knew. The dials would not have been under test.
+
+The audit also corrected a belief of ours: a gap-free mis-shaped brief is **not** a contradiction in
+terms. Gaps are empty *fields* a dial demanded, so a union-complete Task compiles gap-free against
+any profile. What cannot be done is make a cross-role brief simultaneously gap-free and
+information-matched *in the rendered text*, because researcher dials omit the subtask list even when
+it sits on the Task — so M would carry less of the Task than C and lose as a poorer information
+subset, which is precisely the confound arm F exists to eliminate. An identification failure, not an
+impossibility.
+
+**What we kept from the old arm.** If a wrong-shape illustration is ever wanted, the audit specified
+a defensible one — *same-role adjacent donor*, swapping only the load-bearing dials while holding
+`return_contract`, phase and stakes. The informative pair already exists in the repo: `codex`
+(`decomposition` 0.35) against `antigravity` (0.90) at `implement`, which crosses the 0.6 render
+threshold and is what a competent person who believed "always send a task list" would actually do.
+That is a pilot figure, not 120 eval runs.
+
+**Cost.** None. The 120 runs arm M would have consumed are spent on arm A, which can kill a dial by
+name.
