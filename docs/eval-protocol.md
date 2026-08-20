@@ -157,6 +157,13 @@ arm A and dilute the only comparison that can kill a dial by name.
 Every rule has a fixture that violates exactly that rule and must be caught (`tests/test_gate.py`).
 A gate nobody has seen refuse anything is decoration.
 
+The gate is **category-aware**, because the ground truths in the table above are not
+interchangeable: bug fixes and features are graded by a hidden test lifted from the real PR,
+refactors by the pre-existing suite plus the scope diff, and the judged categories by a rubric.
+A refactor carrying a hidden test is refused — a new test asks for a behaviour change, which is
+the opposite of the task — and investigation and under-specified tasks are not asked for a
+fixing PR, because upstream never produced one.
+
 Tasks are sourced from closed issues on real repositories whose fixing PR added a test — that test
 becomes the hidden acceptance check, and the PR's non-test files become the declared scope. No URL
 becomes provenance on an agent's report: `tools/verify_candidate.py` fetches the PR from the GitHub
