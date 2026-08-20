@@ -1,9 +1,10 @@
 # Bliss Point
 
-**One task, shaped correctly for whichever agent receives it.**
+**A handoff contract for multi-agent work: it refuses to dispatch a brief the recipient cannot
+execute.**
 
-Routing decides *who* gets the work. Bliss Point decides *what shape the work arrives in* — and that
-turns out to matter just as much.
+Routing decides *who* gets the work. Bliss Point decides *what shape the work arrives in*, and then
+checks that what you supplied is enough for that particular recipient to act on.
 
 A frontier reasoning model handed a 14-step checklist will follow the checklist instead of noticing
 the checklist is wrong. A fast execution model handed a goal abstraction will improvise scope you
@@ -11,8 +12,9 @@ never asked for. Same task, same words, opposite failure. The fix is not a bette
 different *shape* of prompt per recipient — and the shape is a deterministic function of who is
 receiving it, what phase the work is in, and what it costs to be wrong.
 
-Bliss Point is a small, dependency-light **prompt compiler**. It does not route, dispatch, run a
-loop, or hold a socket. It takes what you know about a task and emits the brief. Your harness —
+Bliss Point is a small, dependency-light **task-contract compiler**. The dials below are its
+intermediate representation; the linter is the part you actually feel. It does not route, dispatch,
+run a loop, or hold a socket. It takes what you know about a task and emits the brief. Your harness —
 [DeepSeek Harness](https://github.com/deepseek-ai), [pi](https://github.com/earendil-works/pi),
 Claude Code, a shell script — does the sending.
 
@@ -59,7 +61,7 @@ antigravity · implement · normal stakes
   escalation_explicitness  ###....... 0.30
 ```
 
-## The gap linter is the useful part
+## The linter is the product
 
 Dials do not invent content — they *demand* it. If the resolved point says this agent needs
 per-subtask acceptance criteria and you supplied none, that is a gap, reported before you spend the

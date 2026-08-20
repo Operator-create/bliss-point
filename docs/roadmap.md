@@ -55,8 +55,12 @@ What settled it:
 rate against token cost. Until then no benchmark is claimed anywhere in the repo.
 
 - **T2.1 — Outcome log.** CLEAR, done. Append-only JSONL, written from day one.
-- **T2.2 — Bench harness.** DIM. One task, N dial perturbations, per-model scoring.
-- **T2.3 — Perturbation protocol.** DIM. Which dial, which direction, how many trials to beat noise.
+- **T2.2 — The 20-task A/B on pi.** CLEAR. Protocol pre-registered in
+  [eval-protocol.md](eval-protocol.md): four information-matched arms (raw / flat / compiled /
+  mis-shaped), two model tiers, 480 runs, thresholds declared before any data exists. The
+  mis-shaped arm is the falsifier; the tier interaction is the actual thesis.
+- **T2.3 — The `flat` renderer for arm F.** CLEAR, and must be built first so it cannot be tuned
+  to lose.
 - **T2.4 — Publish results including the ones that contradict the profiles.** FOGGED.
 - **T2.5 — Mine the outcome log for shapes that correlate with rework.** FOGGED. Needs volume first,
   which means dogfooding is the prerequisite, not a nice-to-have.
@@ -142,16 +146,23 @@ hypothesis is recorded, not applied.
 
 ## D7 — Is "prompt compiler" the right positioning?
 
-**OPEN.** The same audit argues it is not: compilers imply IR, optimisation and backends; DSPy
+**SETTLED 2026-08-20** — No. Bliss Point is a **task-contract compiler**, and the headline is the
+refusal, not the compilation: *it refuses to dispatch a brief the recipient cannot execute.* The
+dials are the IR; the linter is the product. Settled by the author, adopting the audit's argument.
+
+The reasoning that won: compilers imply IR, optimisation and backends; DSPy
 already owns the term in this space; and the sharpest sentence available is not "we compile
 prompts" but **"we refuse to dispatch a brief the recipient cannot execute."** Its proposal is
 *handoff contract* or *task-contract compiler* — the linter is the product, the dials are the IR.
 
-**Counterargument on the record:** "prompt compiler" is a category people already search for, which
-matters for a project with a reputation goal, and the repo currently reads well under that framing.
+**Counterargument on the record, now overridden:** "prompt compiler" is a category people already
+search for, which matters for a project with a reputation goal. Overridden because searchability
+into a crowded category is worth less than one sentence nobody else is saying, and because DSPy
+already owns the term for a different thing.
 
-**Settled by:** the author. This is a naming and audience decision, not a technical one, and the
-cost of changing it rises with every inbound link.
+**What this changes:** the README headline and framing. Not the name, not the API, not the module
+layout. If the eval in D2 shows the dials do nothing and only the linter carries the effect, this
+positioning will already be the honest one.
 
 ---
 
