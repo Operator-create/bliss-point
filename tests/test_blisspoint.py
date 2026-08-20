@@ -268,6 +268,24 @@ class TestBlockingGaps(unittest.TestCase):
         ok = compile(withcriteria, "antigravity", phase="implement")
         self.assertNotIn("subtask_acceptance_missing", [g.code for g in ok.blocking_gaps])
 
+    def test_acceptance_survives_when_subtasks_are_not_rendered(self):
+        """The two branches each assumed the other was carrying the criteria.
+
+        `codex` sits at decomposition 0.35 and acceptance_binding 0.9 — deliberately, that
+        is the "hand a principal engineer the contract, not a checklist" shape. A Task with
+        subtasks hit both branches wrong: the top-level acceptance section was skipped
+        because binding was high and subtasks existed, and the subtasks were never rendered
+        because decomposition was low. Criteria dropped silently, with no gap raised.
+        """
+        t = Task(objective="Ship it.",
+                 subtasks=[Subtask(id="ST1", title="do the thing",
+                                   acceptance=["the thing is done"])],
+                 acceptance=["the suite is green"])
+        for target in list_profiles():
+            b = compile(t, target, phase="implement")
+            self.assertIn("the suite is green" if b.dials.decomposition < 0.6
+                          else "the thing is done", b.text, target)
+
     def test_advisory_gaps_do_not_block(self):
         b = compile(Task(objective="Audit this.", evidence="x" * 3000), "grok", phase="review")
         self.assertIn("evidence_bulky", codes(b))

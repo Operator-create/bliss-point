@@ -204,6 +204,11 @@ def render(task: Task, dials: Dials, profile) -> tuple:
                 "agent is authorised to decide, or lower the dial",
                 {"autonomy": d.autonomy}))
 
+    # Whether the subtask list actually reached the page. The acceptance branch below
+    # keys on this rather than on `task.subtasks`, because a Task can carry subtasks that
+    # a low `decomposition` never renders -- and their criteria would vanish with them.
+    subtasks_rendered = d.decomposition >= 0.6 and bool(task.subtasks)
+
     if d.decomposition >= 0.6:
         if task.subtasks:
             body = "\n".join(
@@ -244,7 +249,7 @@ def render(task: Task, dials: Dials, profile) -> tuple:
                 "to be told what to do",
                 {"specificity": d.specificity}))
 
-    if d.acceptance_binding < 0.6 or not task.subtasks:
+    if d.acceptance_binding < 0.6 or not subtasks_rendered:
         if task.acceptance:
             parts.append(_section("Acceptance criteria", _bullets(task.acceptance)))
         elif d.acceptance_binding >= 0.3:
