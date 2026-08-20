@@ -47,7 +47,8 @@ harness within noise of every other — remains the most likely single result at
 
 ## 2. The control that decides whether any of this means anything
 
-> **The model is held constant. Every harness runs MiniMax through the same OAuth.**
+> **The model is held constant. Every harness runs MiniMax through the same MiniMax OAuth —
+> the subscription login, not an API key.**
 
 Without it there is no experiment. Hermes runs MiniMax-M3; if DeepSeek Harness were run on a
 DeepSeek model, "Melchior codes better on dsh" would measure *DeepSeek's model* and attribute it to
@@ -55,11 +56,33 @@ dsh's harness. Every one of the three claims has this failure mode, and it is th
 that killed arm M in the [eval protocol](eval-protocol.md#11-amendment-log): comparing a thing to a
 differently-shaped thing and reporting the difference as if one variable moved.
 
-The operator's instruction to wire all four harnesses to MiniMax OAuth *is* this control. It is
-recorded here as load-bearing rather than as a setup convenience.
+The operator's instruction to wire every harness to MiniMax OAuth *is* this control. It is recorded
+here as load-bearing rather than as a setup convenience.
 
-**If a harness cannot be pointed at MiniMax, its cell is model-confounded.** It is then reported as
-"not tested" — never run anyway and quietly caveated in a footnote.
+### 2.1 OAuth specifically, not an API key
+
+The auth path is part of the control, not a setup detail, for three reasons:
+
+1. **H7 is a cost claim.** It says Casper *uses fewer tokens* on Prime. If one harness authenticated
+   by subscription and another by metered API, the two cells would be billed, throttled and
+   possibly served differently, and the token and cost columns would not be comparable. The claim
+   would be untestable on its own primary metric.
+2. **A subscription and an API key are not guaranteed to be the same serving path.** Rate limits,
+   context handling and routing can differ. Holding the auth path constant removes a variable that
+   would otherwise sit silently underneath every cell.
+3. **Cost.** Metered API billing across 66 runs is real money for an experiment that is
+   underpowered by design.
+
+**Mixed auth paths are forbidden.** If it turns out that no harness but Hermes can do MiniMax
+OAuth, the correct move is *not* to run some cells on OAuth and others on a key. Either the grid
+shrinks to the harnesses that can, or the **whole grid** — Hermes baselines included — moves to one
+identical API path together. That second option is a decision for the operator, because it costs
+money; it is not a call to make silently mid-run.
+
+**If a harness cannot be pointed at MiniMax by OAuth, its cell is reported as "not tested"** — never
+run anyway and quietly caveated in a footnote. This is the most likely way for cells to die: most
+agent harnesses support an OpenAI-compatible endpoint plus a key, and third-party *OAuth* support is
+comparatively rare. Phase 0 exists to find out before anything is installed.
 
 ### 2.1 The second confound: the agent is not the harness
 
