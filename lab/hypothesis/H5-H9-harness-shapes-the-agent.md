@@ -1,7 +1,24 @@
 # H5–H9 — The harness changes the agent, independently of the model
 
-**Status: OPEN, Phase 0 not yet run.** Filed 2026-08-20 by the operator. Protocol pre-registered
-in [docs/harness-bakeoff.md](../../docs/harness-bakeoff.md).
+**Status: CLOSED 2026-08-20 — H6 REFUTED, H5/H7/H8/H9 NOT TESTED.** Filed and closed the same day.
+Protocol and results in [docs/harness-bakeoff.md](../../docs/harness-bakeoff.md) §12.
+
+- **H6 is refuted permanently** — Playwright CLI is not an agent harness
+  ([R3](../refuted/R3-playwright-cli-as-a-research-harness.md)). This one is settled, not deferred.
+- **H5, H7, H8, H9 are NOT TESTED**, which is deliberately not the same as refuted. No harness but
+  Hermes implements MiniMax OAuth, so the model could not be held constant, and §2.1 forbids running
+  a cell that cannot. They are unfalsifiable *as stated*, not false.
+- **They also lost most of their value** independently of auth:
+  [F5](../findings/F5-three-harnesses-one-provider-layer.md) established that pi, Prime and dsh all
+  descend from or embed pi's provider layer, so the grid was three forks of one codebase.
+
+**What would reopen them.** Any of: a harness outside pi's lineage that implements MiniMax OAuth; an
+operator decision to move the *entire* grid to one identical metered API path; or a MiniMax OAuth
+adapter written for a pi-descendant — with the caveat that the last measures the adapter as much as
+the harness. Price any of them against **one** contested cell, not five.
+
+The operator's decision on 2026-08-20 was to stop and bank the
+[seam report](../../docs/harness-seams.md), which is what Phase 0 was for.
 
 ## The claims
 
