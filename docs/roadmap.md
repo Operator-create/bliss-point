@@ -57,8 +57,9 @@ rate against token cost. Until then no benchmark is claimed anywhere in the repo
 - **T2.1 — Outcome log.** CLEAR, done. Append-only JSONL, written from day one.
 - **T2.2 — The 20-task A/B on pi.** CLEAR. Protocol pre-registered in
   [eval-protocol.md](eval-protocol.md): four information-matched arms (raw / flat / compiled /
-  mis-shaped), two model tiers, 480 runs, thresholds declared before any data exists. The
-  mis-shaped arm is the falsifier; the tier interaction is the actual thesis.
+  one-dial ablation), two model tiers, 480 runs, thresholds declared before any data exists.
+  The tier interaction is the thesis; arm A is the mechanism falsifier. **Blocked on T2.7** —
+  there is nothing to run until tasks exist.
 - **T2.3 — The `flat` renderer for arm F.** DONE 2026-08-20, before the task corpus existed.
   `bliss flat` / `blisspoint.flat()`. Its control properties are enforced by tests: no recipient
   parameter, drops nothing, and provably a superset of every compiled brief across all profiles
@@ -66,6 +67,12 @@ rate against token cost. Until then no benchmark is claimed anywhere in the repo
 - **T2.4 — Publish results including the ones that contradict the profiles.** FOGGED.
 - **T2.5 — Mine the outcome log for shapes that correlate with rework.** FOGGED. Needs volume first,
   which means dogfooding is the prerequisite, not a nice-to-have.
+- **T2.7 — The task corpus and its admissibility gate.** CLEAR, machinery DONE 2026-08-20 in a
+  separate repo (`bliss-point-corpus`) so no agent under test can read its own grader. The gate
+  enforces six rules and *fails* rather than warns; 17 fixture tests prove it rejects each one.
+  **Tasks: 0 of 20.** They are sourced from closed issues on real repositories whose fixing PR
+  added a test, verified against the GitHub API by `verify_candidate.py` before admission — a
+  task authored here would encode the hypothesis it is meant to test.
 - **T2.6 — Make stable-before-volatile section order an invariant.** DIM. See
   [token economy](token-economy.md); the renderer already does it by intuition, and a test should
   make it a rule so a brief's head stays a reusable cache prefix.

@@ -141,6 +141,28 @@ Rules that make a task admissible:
    than for being shaped differently, which is exactly the confound arm F exists to remove.
    Advisory gaps are recorded as a covariate.
 
+### 4.1 Where the corpus lives, and how a task gets in
+
+The corpus is a **separate repository** (`bliss-point-corpus`). Hidden tests cannot live in a
+repo the agent under test can read, and the corpus is evidence with its own provenance rules
+rather than code.
+
+The five rules above are enforced by `tools/corpus_check.py`, which **fails rather than warns** —
+a corpus that is 90% admissible is not 90% of an experiment, it is an experiment with an
+unmeasured hole in it. A sixth rule was added in the building: **arm A must not be vacuous**. The
+gate compiles the task, flips the named dial to its ablated value, and refuses the task if the
+rendered brief does not change. Without it, a task can silently contribute a copy of arm C to
+arm A and dilute the only comparison that can kill a dial by name.
+
+Every rule has a fixture that violates exactly that rule and must be caught (`tests/test_gate.py`).
+A gate nobody has seen refuse anything is decoration.
+
+Tasks are sourced from closed issues on real repositories whose fixing PR added a test — that test
+becomes the hidden acceptance check, and the PR's non-test files become the declared scope. No URL
+becomes provenance on an agent's report: `tools/verify_candidate.py` fetches the PR from the GitHub
+API and emits the provenance block only if the licence, merge status, test presence and diff-size
+criteria all hold.
+
 ## 5. Metrics
 
 ### 5.1 Outcome — the thing that matters

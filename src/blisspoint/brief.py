@@ -217,7 +217,8 @@ def render(task: Task, dials: Dials, profile) -> tuple:
                         "subtask_acceptance_missing",
                         "acceptance_binding is high but these subtasks carry no "
                         f"criteria: {', '.join(missing)}",
-                        {"subtask_ids": missing}))
+                        {"subtask_ids": missing, "acceptance_binding": d.acceptance_binding},
+                        blocking=True))
             untestable = [st.id for st in task.subtasks
                           if d.verification_rigor >= 0.6 and not st.verification]
             if untestable:

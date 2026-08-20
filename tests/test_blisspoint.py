@@ -251,6 +251,23 @@ class TestBlockingGaps(unittest.TestCase):
         loose = compile("which retry strategy is safer?", "grok", phase="review")
         self.assertNotIn("acceptance_missing", [g.code for g in loose.blocking_gaps])
 
+    def test_subtask_criteria_missing_blocks_when_the_contract_is_tight(self):
+        """The gate had a hole: high acceptance_binding moves the criteria into the
+        subtasks, and that branch only advised. A brief for a tight-contract profile could
+        carry no observable definition of done anywhere and still dispatch. Found while
+        building the corpus admissibility gate, which is the point of building it first.
+        """
+        t = Task(objective="Guard the capture transition.",
+                 subtasks=[Subtask(id="ST1", title="make it idempotent")])
+        tight = compile(t, "antigravity", phase="implement")   # acceptance_binding 1.0
+        self.assertIn("subtask_acceptance_missing", [g.code for g in tight.blocking_gaps])
+
+        withcriteria = Task(objective="Guard the capture transition.",
+                            subtasks=[Subtask(id="ST1", title="make it idempotent",
+                                              acceptance=["replay yields one paid order"])])
+        ok = compile(withcriteria, "antigravity", phase="implement")
+        self.assertNotIn("subtask_acceptance_missing", [g.code for g in ok.blocking_gaps])
+
     def test_advisory_gaps_do_not_block(self):
         b = compile(Task(objective="Audit this.", evidence="x" * 3000), "grok", phase="review")
         self.assertIn("evidence_bulky", codes(b))
