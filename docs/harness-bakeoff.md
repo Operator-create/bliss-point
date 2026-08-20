@@ -214,3 +214,67 @@ opserver is a worker, not a home. From the standing routing policy, all still in
 
 Host at recon, 2026-08-20: 30 GiB RAM / 28 free, 8 cores, 80 GiB disk free, Docker 29.7.2,
 Node 22.22.1, Python 3.14.4. Missing and needed: `uv`, `pipx`, `gh`.
+
+
+---
+
+## 12. Phase 0 result — 2026-08-20
+
+**0 GO / 5 NO-GO. No contested cell is feasible under the OAuth control.**
+[Full report](research/2026-08-20-bakeoff-phase0.md), orchestrator-verified against primary source.
+
+| hypothesis | call | reason |
+|---|---|---|
+| H5 — melchior on dsh | NO-GO | `minimax_oauth: no` — the adapter offers no OAuth-only provider |
+| H6 — balthasar on Playwright CLI | **DEAD** | not an agent harness at all — [R3](../lab/refuted/R3-playwright-cli-as-a-research-harness.md) |
+| H7 — casper on Prime | NO-GO | `minimax_oauth: no`; plus a capability-parity defect, below |
+| H8 — melchior on pi | NO-GO | `minimax_oauth: no` — MiniMax is registered API-key-only |
+| H9 — balthasar on dsh | NO-GO | same adapter as H5 |
+
+### 12.1 The five NO-GOs are one fact observed three times
+
+pi, Prime Agent and DeepSeek Harness **all descend from or embed pi's provider layer** — Prime is a
+hard fork of pi-mono, dsh's LLM seam is `@deepseek-ai/dsh-llm-pi-ai`. They inherit the same provider
+model, in which MiniMax is API-key-only and the OAuth registry ships Anthropic, GitHub Copilot and
+OpenAI Codex. See [F5](../lab/findings/F5-three-harnesses-one-provider-layer.md).
+
+So the honest statement is **not** "five harnesses failed". It is: *one provider layer, shared by
+three harnesses, does not implement MiniMax OAuth* — plus a category error, plus Hermes being the
+only harness in the set that implements it natively.
+
+This also degrades the grid independently of auth. The interaction H8 and H9 were added to detect is
+much weaker evidence for a role × harness law when the harnesses are forks of each other. **The one
+uncorrelated contrast is Hermes vs any single pi-descendant**, and any Phase 1 should be priced
+against one contested cell rather than five.
+
+### 12.2 A second, independent defect in H7
+
+Prime Agent's only built-in model tool is `ipython`, which the model uses to read files, run
+commands, edit code and inspect data. Allowlisting it grants filesystem, process and network
+capability through one interpreter, so §2.1's **capability-matched tool allowlist** cannot be
+satisfied with Prime's own allowlist. H7 would need external sandboxing to be comparable at all —
+a defect that survives any decision about auth.
+
+### 12.3 What Phase 0 delivered anyway
+
+Per §8, the real deliverable was the **seam report**, and it arrived whether or not a run ever
+happens:
+
+- **dsh** — an agent-scoped prompt section with `complete: true` becomes the exact assembled prompt,
+  and `includeRuntimeContext: false` suppresses dynamic additions. With
+  [C1](../lab/confirmed/C1-dsh-plugin-seam-is-real.md), this is the strongest hosting seam found for
+  a prompt compiler. Note its tool `restrict()` is **visibility composition, not an authority
+  boundary** — relevant to anyone assuming a tool allowlist is a sandbox.
+- **pi** — `--system-prompt` replaces the default outright, and `--no-context-files`,
+  `--no-skills`, `--no-extensions`, `--no-prompt-templates` suppress discovered additions. That is
+  precisely the control surface the main eval's arms need, and it is why pi remains the right
+  harness for the 20-task A/B.
+- **Prime** — the `ipython`-only tool design is a genuinely different bet, and the reason it cannot
+  meet this protocol's capability control.
+
+### 12.4 Status
+
+**Phase 1 is not authorised.** The three live options — stop and bank the seam report, move the
+whole grid to one metered API path, or write a MiniMax OAuth adapter — differ in cost and in what
+they would measure, and the choice is the operator's. Nothing is installed; nothing needs
+uninstalling. Phase 6 is a no-op unless Phase 1 proceeds.
