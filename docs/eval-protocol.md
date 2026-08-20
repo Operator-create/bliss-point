@@ -131,8 +131,16 @@ Rules that make a task admissible:
    and satisfies it literally has not done the task.
 2. **Declared scope.** Every task names the paths it may touch, so scope drift is measurable as a
    diff, not as a judgement call.
-3. **Solvable by the weaker tier.** If Tier A cannot do a task under any arm, that task measures
-   difficulty, not shape. Pilot each task once on Tier A under arm C; drop tasks that fail flat.
+3. **Solvable by the weaker tier, and not already solved by the floor.** If Tier A cannot do a task
+   under any arm, that task measures difficulty, not shape. Pilot each task once on Tier A under
+   arm C; drop tasks that fail flat.
+
+   The mirror of this was missing from the first draft and was added after round 3 sourcing: pilot
+   each task on Tier A under **arm R** as well. If the raw one-line request already passes, every
+   richer arm will also pass, the task contributes four identical results, and it measures nothing.
+   A **ceiling effect** costs exactly as much budget as a floor effect and is easier to miss,
+   because the runs all look like successes. `mixed` on the arm-R pilot is the ideal: the floor
+   sometimes solves it, so the arms have room to separate.
 4. **No task authored while looking at the dials.** Tasks come from real bug reports and real
    feature requests, otherwise they encode the hypothesis.
 5. **Union-complete, and gap-free in every arm.** The `Task` carries the union of every field any
