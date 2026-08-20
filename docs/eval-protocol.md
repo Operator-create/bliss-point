@@ -54,8 +54,31 @@ That outcome must be reported as prominently as a win. It would mean Bliss Point
 with a decorative IR — which is still a product, but a different one, and D7's positioning already
 survives it.
 
-pi is the harness for both tiers; it is multi-provider, so the harness is held constant while the
+pi is the harness for every cell; it is multi-provider, so the harness is held constant while the
 model varies. That is exactly why the eval runs on pi rather than on our own dispatcher.
+
+### 3.1 Tier and family are different variables, and the first draft confused them
+
+Calling the two conditions "Tier A" and "Tier B" quietly assumed capability was the only thing
+changing. If the small model and the large model come from different vendors, then any interaction
+found could be a **vendor idiosyncrasy** — one company's post-training preferring checklists —
+wearing the costume of a capability law. The whole thesis would rest on a confound.
+
+The minimum design that separates them is a **2 x 2: {small, large} x {family 1, family 2}**, four
+cells, same four arms in each.
+
+| | family 1 | family 2 |
+|---|---|---|
+| **small** | cell A | cell B |
+| **large** | cell C | cell D |
+
+- If the shape preference tracks the **row**, it is a capability effect and the thesis holds.
+- If it tracks the **column**, it is a vendor effect and Bliss Point's profiles are really
+  vendor-specific lore, which is still useful but is a much smaller claim honestly stated.
+- If it tracks **neither**, there is no interaction and §9 applies.
+
+A third family in at least the small row is worth the cost if the budget survives it, because two
+columns cannot distinguish "vendor effect" from "these two vendors happen to differ".
 
 ## 4. Tasks
 
@@ -128,6 +151,49 @@ failed**. If briefs with blocking gaps fail no more often than briefs without, t
 superstition and should be removed. This costs nothing extra and is the only metric here that can
 falsify a decision already shipped.
 
+## 5.7 Objectivity and family bias
+
+Models are not neutral referees of other models. A judge tends to score work from its own family
+higher — same post-training, same idioms, same notion of a good answer — so a single-family
+evaluation can manufacture a result out of nothing but taste. Everything here exists to keep that
+from happening, and to *measure* it where it cannot be removed.
+
+**1. Objective metrics outrank judged ones, and cover most of the eval.** Hidden tests, scope diff,
+token counts and step counts are computed mechanically and no model has an opinion about them. They
+decide 16 of the 20 tasks outright. The rubric judgement applies only to the 4 investigation tasks.
+The strongest defence against judge bias is to shrink the surface where judgement matters at all.
+
+**2. Judging is a cross-family panel, never one judge.** At least two judges, from two different
+families, neither sharing a family with the agent that produced the work — selected with the
+library's own `cross_family()`. Disagreement is reported, not averaged away: inter-rater agreement
+(Krippendorff's alpha) is published with the results. **Alpha below 0.6 means the rubric is broken
+and the judged tasks are reported as inconclusive**, not quietly resolved by picking a judge.
+
+**3. Self-preference is measured, not assumed.** Each judge family also scores a blind sample of
+work produced by its *own* family. The difference between the score it gives its own family and the
+score it gives others is the self-preference bias, in rubric points, for that judge. It is published
+as a number. If the measured bias exceeds the effect we are claiming, **the judged portion of the
+result is void** — the instrument is less precise than the thing it is measuring.
+
+**4. Blinding is on the artifact, and its limits are stated.** Judges see the task and the final
+artifact only: no arm label, no model name, files shuffled and renamed. This does not fully work.
+Models have stylistic fingerprints, and a judge may recognise its own family's prose without being
+told. That residual leak is a stated limitation, which is why control 1 matters more than this one.
+
+**5. The analysis is replicated across families.** The analysis script is written before the data
+exists. Once results are in, an agent from a different family than the script's author re-runs the
+numbers from the raw run files and must reproduce them. A disagreement is a finding about the
+analysis, and blocks publication until resolved.
+
+**6. Comfortable results get the adversarial pass.** Before publishing any result favourable to
+Bliss Point, one agent from a family with no stake in the design is briefed to argue that the result
+is an artefact, given the raw data. Its objection is published alongside the result whether or not
+we agree with it. Results *unfavourable* to Bliss Point do not need this step — the asymmetry is
+deliberate, because only one direction is motivated.
+
+**7. No stopping on a good number.** The run count is fixed in advance (§8). Stopping early because
+the effect looks strong is how a null result becomes a paper.
+
 ## 6. Controls
 
 1. **Same harness build, pinned.** Record the pi commit; a harness upgrade mid-run invalidates it.
@@ -150,9 +216,17 @@ Declared now, so they cannot be moved later.
 | C vs F | pass@1 | ≥ +20 percentage points, paired |
 | C vs F | input tokens at equal pass rate | ≥ −20% |
 | C vs F | steps at equal pass rate | ≥ −15% |
-| C vs M | pass@1 | C − M ≥ +15pp, **required**, or the dials are decoration |
+| C vs M | pass@1 | **KNOWN DEFECT — see below.** |
 | C vs M | scope_violations | M > C, in the predicted direction per tier |
 | Tier A vs Tier B | (C − F) | different in *sign or magnitude*, or the thesis is false |
+
+**Known defect in this table, recorded rather than smoothed over.** The first draft required
+"C − M ≥ +15pp" as the falsifier while simultaneously stating that 20 paired tasks resolve only a
+25–30 point binary effect. Those two statements contradict each other: the falsifier as written
+**cannot fire at the planned sample size**. Either the falsifier moves to continuous metrics, which
+have the power at n=20, or n rises for that comparison specifically, or arm M is replaced. This is
+under external audit and the row stays marked defective until it is resolved. It is left visible on
+purpose — a pre-registration that quietly repairs itself is not a pre-registration.
 
 **Statistics.** Paired per task. Binary outcomes: McNemar on discordant pairs, plus a paired
 bootstrap CI. Continuous outcomes (tokens, steps): paired bootstrap, reported as median difference
