@@ -34,7 +34,7 @@ rendering differs.
 | arm | what it is | what it isolates |
 |---|---|---|
 | **R — Raw** | The request as a person actually types it. One or two lines. | The floor. What we do today. |
-| **F — Flat** | Every `Task` field, rendered into one fixed generic template. No per-recipient variation. | **The real control.** Same information, no shaping. |
+| **F — Flat** | Every `Task` field, one fixed generic template, no recipient named. `bliss flat` / `blisspoint.flat()`. | **The real control.** All the information, none of the shaping. |
 | **C — Compiled** | `bliss compile(task, target=<the model actually running>)`. | The product. |
 | **A — Ablated** | C with exactly **one** dial moved across the threshold where it changes the rendered document. Everything else identical. | **The mechanism falsifier.** If the flip changes nothing, that named dial is decoration. |
 
@@ -52,8 +52,22 @@ Arm A is registered on **`scope_violations` and `steps`**, not on pass@1 — con
 the ones with power at n=20 (§7). The resolved seven-vector for every run is logged, so the
 ablation is auditable rather than described.
 
-Arm F requires a `flat` renderer that emits every section unconditionally — roughly thirty lines,
-and it must be written *before* the tasks are chosen, so it cannot be tuned to lose.
+Arm F's renderer was **built before the task corpus**, deliberately, so it could not be tuned to
+lose. Three properties make it a control rather than a strawman, and each is enforced by a test
+rather than by intention:
+
+1. **It cannot vary by recipient** — `flat(task)` takes no profile, phase or stakes argument. A test
+   asserts the signature, so recipient-awareness cannot be added by accident.
+2. **It drops nothing.** A test asserts that every populated `Task` field appears in the output, and
+   a second asserts that **arm F's content is a superset of every compiled brief's**, across all
+   profiles and all phases. The control can never hold *less* than the arm it controls for.
+3. **It is not sabotaged.** No filler, no unstructured dump — it is what a careful person produces
+   without this library: gather every field, label it, send it.
+
+Property 2 is what the comparison rests on, and it cuts against us on purpose: arm C usually carries
+*less text* than arm F, because shaping is partly selection. A paired test confirms the compiler
+really does drop fields, so the contrast is not vacuous. **If C beats F while saying less, shaping
+did the work. If it does not, field-gathering was the product** (§9).
 
 ## 3. The interaction is the real hypothesis
 

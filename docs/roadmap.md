@@ -59,8 +59,10 @@ rate against token cost. Until then no benchmark is claimed anywhere in the repo
   [eval-protocol.md](eval-protocol.md): four information-matched arms (raw / flat / compiled /
   mis-shaped), two model tiers, 480 runs, thresholds declared before any data exists. The
   mis-shaped arm is the falsifier; the tier interaction is the actual thesis.
-- **T2.3 — The `flat` renderer for arm F.** CLEAR, and must be built first so it cannot be tuned
-  to lose.
+- **T2.3 — The `flat` renderer for arm F.** DONE 2026-08-20, before the task corpus existed.
+  `bliss flat` / `blisspoint.flat()`. Its control properties are enforced by tests: no recipient
+  parameter, drops nothing, and provably a superset of every compiled brief across all profiles
+  and phases.
 - **T2.4 — Publish results including the ones that contradict the profiles.** FOGGED.
 - **T2.5 — Mine the outcome log for shapes that correlate with rework.** FOGGED. Needs volume first,
   which means dogfooding is the prerequisite, not a nice-to-have.

@@ -12,6 +12,7 @@ import yaml
 from . import __version__
 from .compiler import compile as compile_task, cross_family
 from .dials import DIAL_NAMES, DIAL_POLES, correlation
+from .flat import flat
 from .profiles import list_profiles, load_profile, phases, resolve
 
 
@@ -54,6 +55,9 @@ def main(argv=None) -> int:
 
     sub.add_parser("profiles", help="list known agents")
     sub.add_parser("correlate", help="are the dials independent? (D6)")
+
+    f = sub.add_parser("flat", help="render arm F: every field, no recipient (eval control)")
+    f.add_argument("--task", required=True)
     sub.add_parser("phases", help="list known phases")
 
     v = sub.add_parser("validators", help="who may review this agent's work")
@@ -65,6 +69,10 @@ def main(argv=None) -> int:
         for name in list_profiles():
             p = load_profile(name)
             print(f"{p.name:<12} {p.family:<10} {p.role}")
+        return 0
+
+    if args.cmd == "flat":
+        print(flat(_load_task(args.task)), end="")
         return 0
 
     if args.cmd == "correlate":

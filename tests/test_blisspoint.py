@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from blisspoint import (
     Dials, ProfileError, Subtask, Task, compile, correlation, cross_family,
-    list_profiles, resolve,
+    emitted, flat, list_profiles, resolve,
 )
 from blisspoint.profiles import load_profile
 
@@ -269,6 +269,85 @@ class TestDialIndependence(unittest.TestCase):
     def test_refuses_to_report_on_too_few_profiles(self):
         with self.assertRaises(ValueError):
             correlation([Dials(), Dials()])
+
+
+UNION_COMPLETE = Task(
+    objective="Make the retried capture converge on one terminal state.",
+    current_state="The handler is idempotent; the state machine is not.",
+    files=["api/payments/webhook.py"],
+    decisions=["The public API contract does not change."],
+    constraints=["No new database columns."],
+    non_goals=["Rewriting the state machine."],
+    evidence="Sentry PAY-4471: 38 orders stuck pending.",
+    attempts="A dedupe set in the handler moved the race.",
+    instructions="Move idempotency into the state machine.",
+    subtasks=[Subtask(id="ST1", title="Guard the capture transition",
+                      purpose="stop double-apply", scope="api/orders/state.py",
+                      instructions="make the transition idempotent",
+                      acceptance=["replaying capture twice yields one paid order"],
+                      verification="pytest tests/payments -k retry",
+                      returns="the diff")],
+    acceptance=["replaying a capture event twice leaves one paid order"],
+    verification="pytest tests/payments -k retry",
+    open_decisions=["whether to key on event id or transition id"],
+    escalation_triggers=["the fix requires a schema change"],
+    return_format=["changed files", "test output"],
+)
+
+
+class TestFlatRenderer(unittest.TestCase):
+    """Arm F is the experimental control. These tests are what make that true."""
+
+    def test_takes_no_recipient(self):
+        """It cannot vary by profile because it is never given one."""
+        import inspect
+        self.assertEqual(list(inspect.signature(flat).parameters), ["task"])
+
+    def test_drops_nothing(self):
+        """Every populated field of the Task appears in the output."""
+        text = flat(UNION_COMPLETE)
+        populated = {f for f, _ in __import__(
+            "blisspoint.flat", fromlist=["SECTIONS"]).SECTIONS
+            if getattr(UNION_COMPLETE, f)}
+        self.assertEqual(emitted(text, UNION_COMPLETE), populated)
+
+    def test_flat_carries_a_superset_of_every_compiled_brief(self):
+        """The control must never hold less information than the arm it controls for.
+
+        This is the property the whole comparison rests on: if arm C wins while carrying a
+        subset of arm F's content, shaping did the work rather than field-gathering.
+        """
+        f_fields = emitted(flat(UNION_COMPLETE), UNION_COMPLETE)
+        for target in list_profiles():
+            for phase in ("research", "design", "implement", "review", "verify", "synthesize"):
+                c = compile(UNION_COMPLETE, target, phase=phase)
+                c_fields = emitted(c.text, UNION_COMPLETE)
+                self.assertLessEqual(c_fields, f_fields, f"{target}/{phase}")
+
+    def test_compiled_briefs_really_do_drop_things(self):
+        """Sanity check on the above: if C never dropped anything, the comparison is vacuous."""
+        f_fields = emitted(flat(UNION_COMPLETE), UNION_COMPLETE)
+        dropped_somewhere = any(
+            emitted(compile(UNION_COMPLETE, t, phase=p).text, UNION_COMPLETE) < f_fields
+            for t in list_profiles()
+            for p in ("research", "implement", "synthesize"))
+        self.assertTrue(dropped_somewhere)
+
+    def test_subtask_fields_are_all_rendered(self):
+        text = flat(UNION_COMPLETE)
+        for fragment in ("ST1", "stop double-apply", "api/orders/state.py",
+                         "replaying capture twice", "pytest tests/payments -k retry"):
+            self.assertIn(fragment, text)
+
+    def test_section_order_is_fixed(self):
+        text = flat(UNION_COMPLETE)
+        order = [text.index(h) for h in
+                 ("## Objective", "## Evidence", "## Subtasks", "## Return")]
+        self.assertEqual(order, sorted(order))
+
+    def test_accepts_the_same_inputs_as_compile(self):
+        self.assertIn("ship it", flat("ship it"))
+        self.assertIn("ship it", flat({"objective": "ship it"}))
 
 
 class TestCrossFamily(unittest.TestCase):
