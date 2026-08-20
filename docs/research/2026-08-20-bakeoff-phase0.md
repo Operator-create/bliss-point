@@ -15,13 +15,16 @@
 > - **Prime**: `packages/ai/src/utils/oauth/index.ts` exports exactly `anthropicOAuthProvider`,
 >   `githubCopilotOAuthProvider` and `openaiCodexOAuthProvider`. **No MiniMax.** Confirmed.
 >
-> **One correction of emphasis, added by the orchestrator.** The report states, separately and
-> accurately, that Prime Agent *"began as a hard fork of pi-mono"* and that dsh's LLM package is
-> *"pi-ai-backed"*. Both were verified — Prime's README says it *"retains inherited
-> `@earendil-works/pi-*` source package identifiers"*, and dsh's package is literally named
-> `@deepseek-ai/dsh-llm-pi-ai`. Those two facts, put together, are the most consequential result of
-> Phase 0 and the report does not draw the conclusion: **pi, Prime Agent and DeepSeek Harness all
-> descend from or embed pi's provider layer.** See F5.
+> **A note the orchestrator added, then had to retract (2026-08-21).** The report states,
+> separately and accurately, that Prime Agent *"began as a hard fork of pi-mono"* and that dsh's LLM
+> package is *"pi-ai-backed"*. The orchestrator joined those into a claim that the three harnesses
+> were effectively one and that the bake-off grid was therefore confounded. **Pair review by codex
+> refuted that**, and the refutation was verified: dsh's `agent-loop` package has eleven
+> dependencies and none is pi; dsh owns its prompt assembly, tool mediation and context management;
+> the three trees pin different pi-ai versions (0.82.1 / 0.84.2 / 0.7.4). The surviving finding is a
+> sampling caveat, not a confound — see
+> [F5](../../lab/findings/F5-related-provider-code-is-not-a-confound.md). **Nothing in codex's own
+> report was withdrawn.**
 
 # Bliss Point harness bake-off — Phase 0 feasibility report
 

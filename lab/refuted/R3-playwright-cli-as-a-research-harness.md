@@ -33,4 +33,4 @@ chose for it is the right one: **verifiable-citation rate**, not eloquence. That
 experiment inside one harness, not a harness comparison, and it is cheaper than H6 was going to be.
 Filed as a candidate, not scheduled.
 
-Related: [[H5-H9-harness-shapes-the-agent]], [[F5-three-harnesses-one-provider-layer]]
+Related: [[H5-H9-harness-shapes-the-agent]], [[F5-related-provider-code-is-not-a-confound]]

@@ -8,14 +8,17 @@ Protocol and results in [docs/harness-bakeoff.md](../../docs/harness-bakeoff.md)
 - **H5, H7, H8, H9 are NOT TESTED**, which is deliberately not the same as refuted. No harness but
   Hermes implements MiniMax OAuth, so the model could not be held constant, and §2.1 forbids running
   a cell that cannot. They are unfalsifiable *as stated*, not false.
-- **They also lost most of their value** independently of auth:
-  [F5](../findings/F5-three-harnesses-one-provider-layer.md) established that pi, Prime and dsh all
-  descend from or embed pi's provider layer, so the grid was three forks of one codebase.
+- **The grid itself was sound.** An earlier version of this note claimed shared provider code had
+  confounded it; pair review showed that was backwards, and
+  [F5](../findings/F5-related-provider-code-is-not-a-confound.md) now records the correction. The
+  real limit is **external validity** — pi and Prime are not independent architectures, so their
+  auth results are correlated evidence rather than three ecosystem samples.
 
 **What would reopen them.** Any of: a harness outside pi's lineage that implements MiniMax OAuth; an
 operator decision to move the *entire* grid to one identical metered API path; or a MiniMax OAuth
 adapter written for a pi-descendant — with the caveat that the last measures the adapter as much as
-the harness. Price any of them against **one** contested cell, not five.
+the harness. Price them against the hypotheses and the precision target — not against one cell
+merely because provider code is related.
 
 The operator's decision on 2026-08-20 was to stop and bank the
 [seam report](../../docs/harness-seams.md), which is what Phase 0 was for.

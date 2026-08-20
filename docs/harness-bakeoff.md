@@ -231,21 +231,35 @@ Node 22.22.1, Python 3.14.4. Missing and needed: `uv`, `pipx`, `gh`.
 | H8 — melchior on pi | NO-GO | `minimax_oauth: no` — MiniMax is registered API-key-only |
 | H9 — balthasar on dsh | NO-GO | same adapter as H5 |
 
-### 12.1 The five NO-GOs are one fact observed three times
+### 12.1 The auth results are correlated evidence, not independent samples
 
-pi, Prime Agent and DeepSeek Harness **all descend from or embed pi's provider layer** — Prime is a
-hard fork of pi-mono, dsh's LLM seam is `@deepseek-ai/dsh-llm-pi-ai`. They inherit the same provider
-model, in which MiniMax is API-key-only and the OAuth registry ships Anthropic, GitHub Copilot and
-OpenAI Codex. See [F5](../lab/findings/F5-three-harnesses-one-provider-layer.md).
+*(This section was rewritten 2026-08-21 after pair review. The original claimed the five NO-GOs were
+"one fact observed three times" and that the grid was confounded independently of auth. Both were
+wrong — see [F5](../lab/findings/F5-related-provider-code-is-not-a-confound.md).)*
 
-So the honest statement is **not** "five harnesses failed". It is: *one provider layer, shared by
-three harnesses, does not implement MiniMax OAuth* — plus a category error, plus Hermes being the
-only harness in the set that implements it natively.
+pi, Prime Agent and dsh contain **related pi-family provider code**: dsh's optional generic LLM
+adapter depends on `@earendil-works/pi-ai` `^0.82.1`, and Prime began as a hard fork of pi-mono
+while now developing independently on its own 0.7.4 snapshot. pi itself pins 0.84.2.
 
-This also degrades the grid independently of auth. The interaction H8 and H9 were added to detect is
-much weaker evidence for a role × harness law when the harnesses are forks of each other. **The one
-uncorrelated contrast is Hermes vs any single pi-descendant**, and any Phase 1 should be priced
-against one contested cell rather than five.
+That makes the three MiniMax-OAuth results **correlated**, so they must not be read as three
+independent samples of the ecosystem, and H5/H9 must be deduplicated before any prevalence claim —
+they are one dsh result across two role cells.
+
+It does **not** make them one harness, and it does not reduce them to one cause. Each has its own
+proximate reason, and dsh has an additional independent one: its adapter builds its `Models`
+collection with no credential store and runs no login flow, rejecting *every* OAuth-only provider —
+a boundary that would survive pi-ai gaining a MiniMax OAuth module.
+
+Nor does shared provider code confound a whole-harness contrast. A component held **common** across
+cells reduces transport noise rather than varying with the treatment; dsh's agent loop, prompt
+assembly, tool mediation and context management are all dsh-owned, and its `agent-loop` package has
+eleven dependencies of which none is pi. The real limits on the grid are narrower and worth stating
+as they are: **external validity** (pi and Prime are not independent architectures) and **mechanism
+attribution** (a whole-harness A/B attributes an outcome to the runtime bundle, not to one subsystem
+inside it — true of unrelated harnesses too).
+
+The accurate headline is *"0 of 5 pre-registered cells was feasible"* and *"none of the three real
+alternative harnesses supported the required MiniMax OAuth path"* — never "5 of 5 harnesses failed".
 
 ### 12.2 A second, independent defect in H7
 
