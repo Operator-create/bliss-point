@@ -150,6 +150,24 @@ acceptance-criteria pass rate against token cost. Until that exists, the numbers
 - Being a framework. The whole library is a few hundred lines and reads in one sitting.
 - Guessing. When a dial demands input you did not give, it reports a gap; it never fills one in.
 
+## The lab
+
+The numbers in `profiles/` are calibrated opinion, and this repository keeps a working record of
+turning them into something better — or discarding them.
+
+- **[`lab/hypothesis/`](lab/hypothesis/)** — the live claims, each one naming what would kill it.
+- **[`lab/refuted/`](lab/refuted/)** — what died, and what killed it. **Start here.** A falsifier
+  the product could not lose to, struck before any data was collected; a dial merge an audit
+  recommended, killed by measurement at r = −0.632.
+- **[`lab/confirmed/`](lab/confirmed/)** — what survived, marked provisional.
+- **[`lab/findings/`](lab/findings/)** — including the one about a fabricated benchmark figure that
+  arrived tagged `FACT` with a 100% confidence column.
+- **[`lab/logbooks/`](lab/logbooks/)** — written as it happened, dead ends included.
+- **[`docs/eval-protocol.md`](docs/eval-protocol.md)** — the 20-task A/B, pre-registered with
+  binding thresholds, an honest power analysis, and a public amendment log.
+
+If `lab/refuted/` is ever empty, nothing here is being tested.
+
 ## Prior art
 
 - **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)** — MIT, on vendored
