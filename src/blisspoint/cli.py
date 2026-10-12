@@ -112,6 +112,10 @@ def main(argv=None) -> int:
     brief = compile_task(task, args.target, phase=args.phase, stakes=args.stakes,
                          overrides=_parse_overrides(args.overrides))
     print(brief.text)
+    if brief.drops:
+        print("\n".join(["", "<!-- dropped (supplied, and this shape removed it) -----"]
+                        + [f"  - [{d.field}] {d}" for d in brief.drops] + ["-->"]),
+              file=sys.stderr)
     if brief.gaps:
         print("\n".join(["", "<!-- gaps ------------------------------------------"]
                         + [f"  - [{g.code}] {g}" for g in brief.gaps] + ["-->"]), file=sys.stderr)

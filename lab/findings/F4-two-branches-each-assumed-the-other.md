@@ -58,3 +58,21 @@ tests share the author's blind spots by construction. Dogfooding is not a virtue
 the only thing that has actually found defects.
 
 Related: [[F2-the-gate-found-a-hole-in-the-gate]], [[F3-one-rule-for-five-ground-truths]]
+
+---
+
+**Resolved 2026-09-10.** The invariant this finding asked for is written and enforced across all
+profiles, phases and stakes levels. Two things are worth adding to the record here rather than only
+in the new finding:
+
+- **Its first version passed this very defect.** Reverting the fix above left the new test green,
+  because it reported the lost criteria as a legitimate drop with the rationale *"criteria are bound
+  inside each subtask instead"* — while the subtask list had never been rendered. The rationale was
+  named and never checked. Naming a cause is not the same as the cause holding.
+- **The method note above needs qualifying.** It says the defects were found by consuming the
+  library from outside, never by adding tests to it. Today's twin defect was found by a test — a
+  property test whose expectation came from measuring the rendered output, not from the author's
+  model of the code. The useful distinction is not outside-versus-inside; it is whether the check
+  derives from what the program *produced* or from what its author *believes it does*.
+
+See [F6](F6-the-compiler-removed-a-quarter-of-what-it-was-given.md).

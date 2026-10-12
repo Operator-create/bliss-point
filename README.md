@@ -83,6 +83,28 @@ Each gap carries a stable `code` (`subtasks_missing`, `evidence_bulky`, …) and
 `details` such as `{"subtask_ids": ["ST3"]}`. Branch on the code; the message wording is for
 humans and is not part of the API.
 
+### And the other direction
+
+A gap says the recipient needs something you did not supply. The mirror case is a field you *did*
+supply that this recipient's shape removes — a low `decomposition` dropping the subtask list, a low
+`autonomy` dropping the open decisions. Selection is what the dials are for, so those removals are
+correct. Being invisible was not:
+
+```console
+$ bliss compile codex --task ./fix.yaml --phase implement --stakes high
+...
+  - [escalation_triggers] escalation_triggers was supplied but this shape drops it:
+    escalation_explicitness is 0.45, below the 0.60 threshold — no escalation path
+    is stated at this setting
+```
+
+`brief.drops` reports every one, with the dial that caused it, which side of its threshold the value
+sits on, and why. Drops never block — a correct selection is not an error. They exist so that the
+one drop that *is* wrong is visible before dispatch rather than after. Measured across the shipped
+profiles, a fully populated task loses **20.7%** of its fields somewhere, and until 2026-09-10 the
+linter reported none of it:
+[F6](lab/findings/F6-the-compiler-removed-a-quarter-of-what-it-was-given.md).
+
 ## Install
 
 ```bash
@@ -113,8 +135,8 @@ notes:
   - Treat its security warnings as hypotheses until corroborated.
 ```
 
-Ships with `claude`, `codex`, `antigravity`, `grok`, and the Hermes triad (`casper`, `balthasar`,
-`melchior`). Point `BLISSPOINT_PROFILES` at your own directory to replace them entirely — the
+Ships with `claude`, `codex`, `antigravity`, `grok`, `astra`, and the Hermes triad (`casper`,
+`balthasar`, `melchior`). Point `BLISSPOINT_PROFILES` at your own directory to replace them entirely — the
 profiles are data, not code.
 
 That directory is a complete configuration: your profiles plus `_phases.yaml` and `_stakes.yaml`.
@@ -129,6 +151,7 @@ profiles eligible to validate a given author:
 ```console
 $ bliss validators balthasar
 antigravity
+astra
 claude
 codex
 grok
@@ -162,6 +185,8 @@ turning them into something better — or discarding them.
 - **[`lab/confirmed/`](lab/confirmed/)** — what survived, marked provisional.
 - **[`lab/findings/`](lab/findings/)** — including the one about a fabricated benchmark figure that
   arrived tagged `FACT` with a 100% confidence column.
+- **[`lab/measurements/`](lab/measurements/)** — the scripts that re-derive the numbers. A claim you
+  cannot re-derive is a rumour.
 - **[`lab/logbooks/`](lab/logbooks/)** — written as it happened, dead ends included.
 - **[`docs/eval-protocol.md`](docs/eval-protocol.md)** — the 20-task A/B, pre-registered with
   binding thresholds, an honest power analysis, and a public amendment log.

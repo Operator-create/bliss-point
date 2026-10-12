@@ -107,16 +107,34 @@ Blocking: `objective_empty` always, and `acceptance_missing` when `acceptance_bi
 `bliss compile --gate` exits 1 on those; `--strict` still exits 1 on any gap.
 
 - **T4.1 — Pre-dispatch hook that refuses a blocking brief.** DIM. Now well-defined enough to build.
+- **T4.2 — The drop channel.** DONE 2026-09-10. `Brief.drops`, alongside `Brief.gaps`. A gap points
+  forward (*the recipient needs something you did not supply*); a drop points backward (*you
+  supplied something and the shape removed it*). Separate channels because the remedies are
+  opposite — gather it, versus override the dial — and because reporting 448 correct selections as
+  gaps would bury the two that are not. Drops are **advisory by construction**: they never block,
+  since a correct selection is not an error. See
+  [F6](../lab/findings/F6-the-compiler-removed-a-quarter-of-what-it-was-given.md).
 
 ---
 
 ## D5 — Does `stakes` earn its place?
 
-**OPEN.** It currently moves four dials in a fixed pattern. That may mean it is a real axis, or that
-it is two dials wearing a trenchcoat.
+**OPEN, and now with a measurement that narrows it.** It currently moves four dials in a fixed
+pattern. That may mean it is a real axis, or that it is two dials wearing a trenchcoat.
 
 **Settled by:** whether any profile ever needs a stakes table that is not a scalar multiple of the
 default one. One counterexample settles it.
+
+**Evidence 2026-09-10** ([F7](../lab/findings/F7-the-dials-are-continuous-the-renderer-is-not.md)):
+across the eight shipped profiles, low / normal / high produce a **byte-identical brief at 31 of 48
+(profile, phase) pairs**. Where it does change something, it changes it through
+`acceptance_binding` and `verification_rigor`. Its `+0.15` to `escalation_explicitness` at high
+stakes buys an escalation section for **no profile in any phase** — checked exhaustively, not
+sampled.
+
+That is not yet an answer to D5, because 17 of 48 pairs do differ. It is a sharper question:
+`stakes` earns its place through two dials, and is inert on the one an operator would most expect it
+to move. Whether that is a bad axis or a badly calibrated one is **D8**, below.
 
 ---
 
@@ -150,6 +168,62 @@ calling it a finding.
 **Settled by:** the same matrix computed over profiles written by other people, or by the D2 bench
 showing that perturbing two "separate" dials produces indistinguishable outcomes. Until then the
 hypothesis is recorded, not applied.
+
+**The caution above now has a number, 2026-09-10.** Adding an eighth profile (`astra`, derived from
+the routing policy, nothing else changed) moved the matrix by a **mean of 0.176** across all 21
+pairs and pushed three pairs across the |r| ≥ 0.9 line. The audit's one surviving merge candidate
+fell out of merge range, `acceptance_binding / verification_rigor` +0.921 → **+0.796**, and so did
+the tightest pair in the matrix, `specificity / verification_rigor` +0.978 → **+0.754**, which the
+roadmap records as the pair nobody predicted. The largest single move was
+`decomposition / context_volume`, +0.773 → **+0.183**, because `astra` is the first profile to
+combine low decomposition with high context volume — a corner of the space that had been empty, and
+whose emptiness was what the correlation was measuring.
+
+Had the merge been taken on the n=7 evidence, one new profile would have unmade it. See
+[F9](../lab/findings/F9-one-profile-moved-the-whole-correlation-matrix.md), where an adversarial
+review established the part that matters: the shift is not generic small-sample instability. A
+profile resampled from the habits already in the set matches it about 1% of the time, and 12 of 13
+synthetic eighths leave `decomposition / context_volume` where the n=7 matrix put it. The cause is
+**corner occupancy**, so the right statement of D6's caution is that the matrix is fitted to a hull
+and does not generalise outside it. The numbers in the table above are the n=7 ones and are kept as
+they were published; `bliss correlate` prints the current set.
+
+---
+
+## D8 — Should a phase or stakes delta be able to reach a render threshold?
+
+**OPEN. Filed 2026-09-10** from
+[F7](../lab/findings/F7-the-dials-are-continuous-the-renderer-is-not.md).
+
+Resolution is continuous; the renderer reads the result only through eleven `>=` thresholds. The
+deltas in `_phases.yaml` and `_stakes.yaml` were calibrated as if the output were continuous too, so
+most of them land inside a step and change nothing. 144 (profile × phase × stakes) points produce
+**26 distinct briefs**; `claude` produces one brief at all 18 of its points.
+
+**There is already a counterexample on the record**, which is what makes this a decision rather than
+a curiosity. On 2026-08-20 a high-stakes `codex` brief needed its escalation triggers — they were
+safety stops — and no phase or stakes setting could produce them. It took a manual dial override,
+with the reason written down.
+
+Five options, none taken:
+
+1. **Accept it.** Profile base values decide shape; phase and stakes are documentation with
+   arithmetic attached. Cheapest and honest, if the README stops implying otherwise.
+2. **Widen the deltas** so a phase or stakes change can cross a threshold. This is a dial-value
+   change and therefore blocked behind **D2** — it is exactly the unmeasured retuning this project
+   refuses to do on taste.
+3. **Move the thresholds per profile.** More expressive, and it makes every profile a renderer
+   config; D3's 126-drifting-templates risk in a new place.
+4. **Render continuously** — graded prose rather than present/absent sections. Large, and it would
+   make the arm C / arm F information-subset property much harder to establish.
+5. **Make supplied stop conditions undroppable**, treating "an escalation trigger the operator wrote
+   down must reach the recipient" as a safety invariant rather than a dial-quality question. Narrow,
+   and the only option that addresses the recorded counterexample directly. It changes the semantics
+   of one dial, so doing it before the D2 bench runs would contaminate the thing the bench measures.
+
+**Settled by:** the operator, on option 5, since it is a safety call rather than a measurement; and
+by the D2 bench on the rest. Until then, drops are at least **audible** (T4.2), which is what was
+missing when the counterexample happened.
 
 ---
 

@@ -1,0 +1,37 @@
+# Added 2026-09-10 from the GPT Astra edition of the routing policy
+# (docs/source/model-routing-policy.txt §4). Calibrated opinion, like every other
+# profile here, and with less operational experience behind it than the rest: no
+# brief has been dispatched to this recipient from this library yet.
+name: astra
+family: openai
+role: maximum-intelligence escalation / computer operator / nuclear security auditor
+fresh_conversation_default: true
+dials:
+  # It is escalated to precisely when narrower reviews came back incomplete or
+  # contradictory. Prescribing the steps would re-impose the frame that failed.
+  specificity: 0.25
+  decomposition: 0.20
+  acceptance_binding: 0.45
+  autonomy: 0.85
+  # "Give Astra the strongest available evidence: architecture, threat model,
+  # relevant code, dependency and configuration data, test results, logs, prior
+  # findings, rejected hypotheses and explicit scope boundaries." The highest
+  # context_volume in the set, and the only profile where a bulky corpus is correct.
+  context_volume: 0.95
+  verification_rigor: 0.80
+  # Above the 0.60 render threshold on purpose. The policy requires explicit scope
+  # boundaries in the handoff, and below 0.60 the renderer removes them -- see
+  # lab/findings/F6. Recorded here rather than left as a coincidence.
+  escalation_explicitness: 0.65
+notes:
+  - Not a default. Escalate only when its extra range would change the outcome.
+  - A finding is not true because Astra is powerful. Critical ones need reproduction, code evidence or a test before they are acted on.
+  - Supply rejected hypotheses and explicit scope boundaries, not just the evidence.
+  - Same family as codex, so neither can be the other's cross-family validator.
+return_contract:
+  - severity-ranked findings
+  - exact evidence and affected components
+  - a plausible exploit or failure path
+  - confidence level and the assumptions it rests on
+  - recommended remediation and verification steps
+  - confirmed defects separated from hypotheses

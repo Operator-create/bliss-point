@@ -12,7 +12,9 @@ from blisspoint import (
     Dials, ProfileError, Subtask, Task, compile, correlation, cross_family,
     emitted, flat, list_profiles, resolve,
 )
-from blisspoint.profiles import load_profile
+from blisspoint.brief import TASK_FIELDS, UNEXPLAINED, has_content
+from blisspoint.flat import SECTIONS
+from blisspoint.profiles import load_profile, phases
 
 
 def codes(brief):
@@ -383,6 +385,115 @@ class TestFlatRenderer(unittest.TestCase):
     def test_accepts_the_same_inputs_as_compile(self):
         self.assertIn("ship it", flat("ship it"))
         self.assertIn("ship it", flat({"objective": "ship it"}))
+
+
+PROFILES_X_PHASES_X_STAKES = [
+    (t, ph, st) for t in list_profiles() for ph in phases()
+    for st in ("low", "normal", "high")
+]
+
+
+class TestNothingVanishes(unittest.TestCase):
+    """The F4 invariant.
+
+    F2, F3 and F4 were one structural weakness: every test asserted "this input
+    produces that gap", and none asserted "no populated field ever leaves the Task
+    without being accounted for". These are that assertion.
+
+    A field is accounted for if it appears in the brief, or is reported as a Drop,
+    or raises a Gap. F4 said "appears or raises a gap"; a separate Drop channel was
+    added because reporting 423 correct selections as gaps would bury the two that
+    are not. Direction differs, remedy differs, channel differs.
+    """
+
+    def populated(self, task):
+        return {f for f in TASK_FIELDS if has_content(getattr(task, f))}
+
+    def test_the_field_inventory_matches_the_task(self):
+        """A field added to Task without being wired in here fails, rather than going quiet."""
+        self.assertEqual(set(TASK_FIELDS), set(Task.__dataclass_fields__))
+        self.assertEqual(set(TASK_FIELDS), {name for name, _ in SECTIONS})
+
+    def test_every_populated_field_is_emitted_or_dropped(self):
+        """Across every profile, phase and stakes level. No exceptions, no corners."""
+        want = self.populated(UNION_COMPLETE)
+        for target, phase, stakes in PROFILES_X_PHASES_X_STAKES:
+            b = compile(UNION_COMPLETE, target, phase=phase, stakes=stakes)
+            accounted = emitted(b.text, UNION_COMPLETE) | {d.field for d in b.drops}
+            self.assertEqual(want - accounted, set(),
+                             f"{target}/{phase}/{stakes} lost a field in silence")
+
+    def test_no_field_is_both_emitted_and_dropped(self):
+        for target, phase, stakes in PROFILES_X_PHASES_X_STAKES:
+            b = compile(UNION_COMPLETE, target, phase=phase, stakes=stakes)
+            both = emitted(b.text, UNION_COMPLETE) & {d.field for d in b.drops}
+            self.assertEqual(both, set(), f"{target}/{phase}/{stakes}")
+
+    def test_every_drop_is_explained_by_a_dial(self):
+        """The rationale table is load-bearing, not commentary.
+
+        A drop it cannot name a dial for is a renderer bug of the F4 kind, and a drop
+        whose named dial is on the wrong side of its threshold means the table has
+        drifted from the renderer. Both fail here.
+        """
+        for target, phase, stakes in PROFILES_X_PHASES_X_STAKES:
+            b = compile(UNION_COMPLETE, target, phase=phase, stakes=stakes)
+            for d in b.drops:
+                where = f"{target}/{phase}/{stakes} {d.field}"
+                self.assertNotEqual(d.dial, UNEXPLAINED, where)
+                self.assertEqual(getattr(b.dials, d.dial), d.value, where)
+                if d.side == "below":
+                    self.assertLess(d.value, d.threshold, where)
+                else:
+                    self.assertGreaterEqual(d.value, d.threshold, where)
+
+    def test_the_compiler_still_selects(self):
+        """Guard on the guard: if nothing ever dropped, the invariant above is vacuous
+        and so is the arm C / arm F comparison the whole eval rests on."""
+        total = sum(len(compile(UNION_COMPLETE, t, phase=ph, stakes=st).drops)
+                    for t, ph, st in PROFILES_X_PHASES_X_STAKES)
+        self.assertGreater(total, 100)
+
+    def test_a_supplied_field_you_did_not_supply_is_not_a_drop(self):
+        """No noise. Drops report subtraction, never absence — that is what gaps are for."""
+        b = compile("ship the thing", "codex")
+        self.assertEqual(b.drops, [])
+
+    def test_a_safety_stop_dropped_at_high_stakes_is_reported(self):
+        """The incident this came from: escalation triggers that were stop conditions
+        ("do not take pihole's port 53") vanished from a codex brief at 0.45, silently,
+        and were noticed only by reading the rendered text. High stakes does not lift
+        codex over the 0.60 threshold, so the drop is still correct — and now audible."""
+        task = Task(objective="Probe five harnesses.",
+                    escalation_triggers=["do not bind port 53", "do not fall back to the laptop"])
+        b = compile(task, "codex", phase="research", stakes="high")
+        self.assertNotIn("port 53", b.text)
+        dropped = {d.field: d for d in b.drops}
+        self.assertIn("escalation_triggers", dropped)
+        self.assertEqual(dropped["escalation_triggers"].dial, "escalation_explicitness")
+        self.assertLess(dropped["escalation_triggers"].value, 0.6)
+
+    def test_instructions_survive_a_missing_task_list(self):
+        """Found by the invariant above, on its first run, in a case no test covered.
+
+        decomposition >= 0.6 with no subtasks skipped both branches: no subtask list to
+        render, and the instructions branch is gated on the dial being *low*. The brief
+        went out with an objective, a return contract and nothing to do — and
+        `subtasks_missing` is advisory, so `--gate` passed it."""
+        task = Task(objective="Rebuild the settings screen.",
+                    instructions="Port the three panels to the new layout primitive.")
+        for target in ("antigravity", "casper", "melchior", "balthasar"):
+            b = compile(task, target, phase="implement")
+            self.assertIn("subtasks_missing", codes(b), target)
+            self.assertIn("Port the three panels", b.text, target)
+            self.assertNotIn("instructions", {d.field for d in b.drops}, target)
+
+    def test_an_override_buys_the_section_back(self):
+        task = Task(objective="Probe five harnesses.", escalation_triggers=["do not bind port 53"])
+        b = compile(task, "codex", phase="research", stakes="high",
+                    overrides={"escalation_explicitness": +0.30})
+        self.assertIn("port 53", b.text)
+        self.assertNotIn("escalation_triggers", {d.field for d in b.drops})
 
 
 class TestCrossFamily(unittest.TestCase):

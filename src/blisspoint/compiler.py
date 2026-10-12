@@ -22,10 +22,11 @@ def compile(task, target: str, phase: str = "implement", stakes: str = "normal",
         task = Task.from_dict(task)
 
     profile, dials = resolve(target, phase=phase, stakes=stakes, overrides=overrides)
-    text, gaps = render(task, dials, profile)
+    text, gaps, drops = render(task, dials, profile)
     return Brief(
         text=text, dials=dials, target=profile.name, phase=phase, stakes=stakes,
-        gaps=gaps, fresh_conversation=wants_fresh_conversation(profile, dials),
+        gaps=gaps, drops=drops,
+        fresh_conversation=wants_fresh_conversation(profile, dials),
     )
 
 

@@ -7,7 +7,7 @@ A pure function with a linter attached.
 ```
 Task (what you know)  ─┐
 profile               ─┤
-phase                 ─┼──►  resolve()  ──►  Dials  ──►  render()  ──►  Brief(text, gaps)
+phase                 ─┼──►  resolve()  ──►  Dials  ──►  render()  ──►  Brief(text, gaps, drops)
 stakes                ─┤
 overrides             ─┘
 ```
@@ -18,18 +18,24 @@ difference.
 
 ## Module map
 
-| module | ~lines | job |
+| module | lines | job |
 |---|---|---|
-| `dials.py` | 70 | the seven axes, clamping, additive shifts |
-| `profiles.py` | 97 | load profiles + phase/stakes tables, resolve the point |
-| `brief.py` | 219 | `Task` in, brief text and gaps out. The only place shape rules live |
-| `compiler.py` | 40 | `compile()` and `cross_family()` |
+| `dials.py` | 100 | the seven axes, clamping, additive shifts |
+| `profiles.py` | 158 | load profiles + phase/stakes tables, resolve the point |
+| `brief.py` | 461 | `Task` in, brief text, gaps and drops out. The only place shape rules live |
+| `flat.py` | 110 | arm F: every field, no recipient. The eval's control |
+| `compiler.py` | 41 | `compile()` and `cross_family()` |
 | `outcomes.py` | 42 | append-only JSONL log |
-| `cli.py` | 100 | `bliss compile / dials / profiles / phases / validators` |
+| `cli.py` | 128 | `bliss compile / dials / profiles / phases / correlate / flat / validators` |
+
+`brief.py` roughly doubled on 2026-09-10 when drop detection landed, and it is now more than half
+the library. The "readable in one sitting" invariant is not broken yet, but that file is the one to
+watch: it holds the render rules *and* the check that the render rules lost nothing, and those are
+two jobs.
 
 ## Why the dials are additive, not a lookup table
 
-A lookup table of (agent × phase × stakes) briefs is 7 × 6 × 3 = 126 templates that drift apart the
+A lookup table of (agent × phase × stakes) briefs is 8 × 6 × 3 = 144 templates that drift apart the
 moment anyone edits one. Additive deltas mean a phase's meaning is written once — `design` raises
 autonomy and lowers specificity *for every agent* — and adding an eighth agent costs one YAML file,
 not eighteen.
@@ -46,6 +52,11 @@ is reported as a gap and the section is omitted.
 
 This is deliberate. A prompt compiler that invents acceptance criteria is a prompt compiler that
 launders your uncertainty into an agent's confidence.
+
+The mirror rule, added 2026-09-10: it must not silently *remove* content either. A populated field
+that the resolved point discards is reported as a drop, naming the dial and the threshold. Every
+compiled brief satisfies **emitted ∪ dropped ∪ gapped ⊇ populated**, asserted across all profiles,
+phases and stakes levels in `TestNothingVanishes`. Selection is legitimate; silence is not.
 
 ## Provenance
 

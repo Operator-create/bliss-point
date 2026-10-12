@@ -20,7 +20,7 @@ text, shaping did the work. If it does not, the field-gathering was the whole pr
 
 from __future__ import annotations
 
-from .brief import Subtask, Task
+from .brief import Subtask, Task, has_content, marker_for
 
 #: Fixed order. Never varies, never reorders, never conditionally reorders.
 SECTIONS = (
@@ -42,17 +42,13 @@ SECTIONS = (
 )
 
 
-def _has(value) -> bool:
-    return bool(value.strip()) if isinstance(value, str) else bool(value)
-
-
 def _render_subtask(st: Subtask) -> str:
     """Every subtask field, unconditionally -- the compiler binds these by dial, flat does not."""
     lines = [f"### {st.id} — {st.title}"]
     for label, value in (("Purpose", st.purpose), ("Scope", st.scope),
                          ("Instructions", st.instructions), ("Verification", st.verification),
                          ("Return", st.returns)):
-        if _has(value):
+        if has_content(value):
             lines.append(f"{label}: {value}")
     if st.depends_on:
         lines.append(f"Depends on: {', '.join(st.depends_on)}")
@@ -80,7 +76,7 @@ def flat(task) -> str:
     parts = ["# Task brief\n"]
     for name, heading in SECTIONS:
         value = getattr(task, name)
-        if _has(value):
+        if has_content(value):
             parts.append(f"## {heading}\n{_body(name, value)}\n")
     return "\n".join(parts).rstrip() + "\n"
 
@@ -88,16 +84,11 @@ def flat(task) -> str:
 def marker(task, field: str) -> str | None:
     """A short string that appears in rendered output iff `field`'s content was emitted.
 
-    Used to verify information parity between arms mechanically rather than by reading them.
+    Used to verify information parity between arms mechanically rather than by reading
+    them. One implementation, shared with the compiler's drop detection, so arm F and
+    arm C can never disagree about what "emitted" means.
     """
-    value = getattr(task, field)
-    if not _has(value):
-        return None
-    if field == "subtasks":
-        return value[0].id
-    if isinstance(value, str):
-        return value.strip()[:24]
-    return str(value[0])[:24]
+    return marker_for(task, field)
 
 
 def emitted(text: str, task) -> set:

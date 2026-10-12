@@ -1,5 +1,9 @@
 <!-- Source document, preserved verbatim. The profiles in ../../profiles/ are
-     derived from this. Edit the profiles, not this file. -->
+     derived from this. Edit the profiles, not this file.
+
+     Re-extracted 2026-09-10 from "AGENT_PROMPTING_PROTOCOL.docx". Substantively
+     identical to the copy vendored 2026-08-23 -- a word-level diff shows only the
+     line breaks inside the subtask template, which the previous extraction joined. -->
 
 
 COMPANION PROTOCOL
@@ -52,7 +56,16 @@ Test or verification method — command, inspection, screenshot comparison or ev
 Handoff output — what the agent must return so another agent can continue.
 MODULARITY TEST: If a subtask cannot be tested on its own, split it. If completing it requires silently redesigning another subtask, the interface or dependency is not defined well enough.
 Reusable subtask template
-SUBTASK [ID] — [ACTION TITLE]Purpose: [why it matters]Scope: [files/components/surfaces]Dependencies: [none or explicit IDs]Instructions: [what to do]Acceptance criteria:• [observable pass condition]• [observable pass condition]Verification: [test/command/visual check]Return: [changed files, evidence, findings and blockers]
+SUBTASK [ID] — [ACTION TITLE]
+Purpose: [why it matters]
+Scope: [files/components/surfaces]
+Dependencies: [none or explicit IDs]
+Instructions: [what to do]
+Acceptance criteria:
+• [observable pass condition]
+• [observable pass condition]
+Verification: [test/command/visual check]
+Return: [changed files, evidence, findings and blockers]
 4. Claude — Architect / Planner / Coordinator
 Claude should receive the problem to solve, the boundaries and the decisions it owns. Do not over-prescribe implementation before asking it to reason about architecture.
 Prompt Claude with
@@ -170,3 +183,4 @@ Uncertainty and blockers — what remains unknown and why.
 Recommended next action — implement, investigate, escalate, verify or stop.
 Context compression — enough state for a new conversation without inherited baggage.
 FINAL PRINCIPLE: The routing policy selects the specialist. This protocol shapes the request so that specialist can do its best work with minimum wasted context.
+
